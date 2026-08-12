@@ -257,7 +257,7 @@
       <button class="mini-btn accent" id="kunde-save">Speichern</button>
       <span id="save-status" style="font-size:12px; color:var(--text-3);"></span>
     </div>
-    <div class="uwert-hint" style="margin-top:10px;">Der Name ist für den Ausdruck alleine nicht zwingend zu speichern — er wandert beim „Als PDF speichern" automatisch in den Dateinamen (z. B. „Lutz Spring Auslegungstool - Müller - Weishaupt Evoblock WEB 9-14"). Speichern und Duplizieren sind nur für Dämmvarianten nötig.</div>
+    <div class="uwert-hint" style="margin-top:10px;">Der Name ist für den Ausdruck alleine nicht zwingend zu speichern — er wandert beim „Als PDF speichern" automatisch in den Dateinamen (z. B. „Wärmepumpenauslegungstool - Müller - Weishaupt Evoblock WEB 9-14 - 24.07.2026"). Speichern und Duplizieren sind nur für Dämmvarianten nötig.</div>
   </div>
 
   <!-- BLOCK 1: Bestandsanlage / Heizart -->
@@ -410,6 +410,18 @@
             <button type="button" data-solardem="nein">Nein, bleibt</button>
           </div>
           <div class="uwert-hint">Bei Demontage wird die Solarflüssigkeit in einem Kanister aufgefangen (verbleibt beim Kunden).</div>
+        </div>
+      </div>
+
+      <div class="grid-in" style="margin-top:16px;">
+        <div>
+          <label class="fld">Photovoltaik-Anlage vorhanden?</label>
+          <div class="segment" id="pv">
+            <button type="button" data-pv="nein" class="active">Nein</button>
+            <button type="button" data-pv="ja">Ja</button>
+            <button type="button" data-pv="geplant">Nein, geplant</button>
+          </div>
+          <div class="uwert-hint" id="pv-hint">Die Wärmepumpe ist SG-Ready und kann PV-Überschuss nutzen (Eigenstromanteil erhöhen). Bei geplanter PV die SG-Ready-Anbindung und ggf. Modbus/WEM-Portal vorsehen.</div>
         </div>
       </div>
     </div>
@@ -905,6 +917,7 @@
   var zirkulation = "nein";       // ja | nein
   var solar = "nein";             // ja | nein — Solarthermie vorhanden
   var solarDemontage = "ja";      // ja | nein — nur relevant wenn solar==ja
+  var pv = "nein";                // ja | nein | geplant — Photovoltaik
   var speicherKonzept = "getrennt"; // getrennt (WAS+WES) | wms
   var wpAufgabe = "heizung_ww";   // heizung_ww | nur_heizung
   var waermequelle = "luft";      // luft | sole
@@ -1071,6 +1084,27 @@
     });
   });
 
+  // Photovoltaik vorhanden / geplant / nein
+  function pvAnwenden(){
+    document.querySelectorAll("#pv button").forEach(function(x){ x.classList.toggle("active", x.getAttribute("data-pv")===pv); });
+    var txt;
+    if(pv === "ja"){
+      txt = "PV vorhanden — die Wärmepumpe ist SG-Ready und kann den PV-Überschuss nutzen (Eigenstromanteil erhöhen). SG-Ready-Anbindung bzw. Modbus/WEM-Portal einplanen.";
+    } else if(pv === "geplant"){
+      txt = "PV für die Zukunft geplant — SG-Ready-Vorbereitung vorsehen, damit die Anbindung später ohne Umbau möglich ist. Auf Leerrohr/Steuerleitung zum künftigen Wechselrichter achten.";
+    } else {
+      txt = "Die Wärmepumpe ist SG-Ready und kann PV-Überschuss nutzen (Eigenstromanteil erhöhen). Bei geplanter PV die SG-Ready-Anbindung und ggf. Modbus/WEM-Portal vorsehen.";
+    }
+    el("pv-hint").textContent = txt;
+  }
+  document.querySelectorAll("#pv button").forEach(function(b){
+    b.addEventListener("click", function(){
+      pv = b.getAttribute("data-pv");
+      pvAnwenden();
+      calc(); arbeitsstandSichern();
+    });
+  });
+
   // ---- Zusätzlich benötigte Komponenten ----
   function komponentenErmitteln(gewaehlt, hlFinal){
     // Nur objektabhängige Zusatzpositionen, die NICHT im Standardangebot enthalten sind.
@@ -1080,6 +1114,12 @@
     if(solar === "ja" && solarDemontage === "ja"){
       k.push({art:"pflicht", name:"Leerer Kanister für Solarflüssigkeit",
         desc:"Zum Auffangen der Solarflüssigkeit beim Rückbau der Solarthermie-Anlage. Der Kanister verbleibt beim Kunden (Entsorgung bzw. Weiterverwendung durch den Kunden)."});
+    }
+
+    // --- Öltankentsorgung (nur bei Öl-Bestand) ---
+    if(heizart === "oel"){
+      k.push({art:"pflicht", name:"Öltankentsorgung inkl. Restölentsorgung",
+        desc:"Demontage und fachgerechte Entsorgung des Öltanks samt Restöl und Ölschlamm. Bei erdverlegten oder Kellertanks ggf. Fachbetrieb erforderlich. Entsorgungsnachweis dokumentieren."});
     }
 
     // --- Erdwärmequelle (nur bei Sole/Wasser) ---
@@ -1672,6 +1712,7 @@
     if(solar === "ja"){
       b += zeile("Solarthermie-Anlage", solarDemontage === "ja" ? "vorhanden — wird demontiert" : "vorhanden — bleibt bestehen");
     }
+    b += zeile("Photovoltaik-Anlage", pv === "ja" ? "vorhanden (SG-Ready-Anbindung)" : pv === "geplant" ? "für die Zukunft geplant" : "nicht vorhanden");
     el("ps-bestand").innerHTML = b;
 
     // Heizlast
@@ -1741,9 +1782,12 @@
 
     // Seitentitel = Dateiname beim Speichern als PDF
     // Schrägstriche (z. B. "WEB 13/20") würden im Dateinamen stören -> ersetzen
-    var titel = "Lutz Spring Auslegungstool";
+    var jetzt = new Date();
+    var datum = ("0"+jetzt.getDate()).slice(-2) + "." + ("0"+(jetzt.getMonth()+1)).slice(-2) + "." + jetzt.getFullYear();
+    var titel = "Wärmepumpenauslegungstool";
     if(name) titel += " - " + name;
     titel += " - " + geraeteBez(d.gewaehlt).replace(/\//g,"-");
+    titel += " - " + datum;
     document.title = titel;
   }
 
@@ -1756,7 +1800,7 @@
   var aktuelleId = null;  // id des geladenen Kunden, null = ungespeicherter Arbeitsstand
 
   function standErfassen(){
-    var stand = { heizart: heizart, gebMode: gebMode, gasEinheit: gasEinheit, altVlBekannt: altVlBekannt, abwasser: abwasser, zirkulation: zirkulation, solar: solar, solarDemontage: solarDemontage, speicherKonzept: speicherKonzept, wpAufgabe: wpAufgabe, waermequelle: waermequelle, aeroblockAktiv: aeroblockAktiv, heizflaeche: heizflaeche, vlManuell: vlManuell, fbhVerteiler: fbhVerteiler, beidesVerteiler: beidesVerteiler, felder: {} };
+    var stand = { heizart: heizart, gebMode: gebMode, gasEinheit: gasEinheit, altVlBekannt: altVlBekannt, abwasser: abwasser, zirkulation: zirkulation, solar: solar, solarDemontage: solarDemontage, pv: pv, speicherKonzept: speicherKonzept, wpAufgabe: wpAufgabe, waermequelle: waermequelle, aeroblockAktiv: aeroblockAktiv, heizflaeche: heizflaeche, vlManuell: vlManuell, fbhVerteiler: fbhVerteiler, beidesVerteiler: beidesVerteiler, felder: {} };
     alleInputs.forEach(function(id){
       var e = el(id);
       if(!e) return;
@@ -1798,6 +1842,8 @@
     solar = stand.solar || "nein";
     solarDemontage = stand.solarDemontage || "ja";
     solarAnwenden();
+    pv = stand.pv || "nein";
+    pvAnwenden();
     speicherKonzept = stand.speicherKonzept || "getrennt";
     speicherAnwenden();
     if(stand.fbhVerteiler && stand.fbhVerteiler.length){
