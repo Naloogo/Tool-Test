@@ -94,6 +94,13 @@
   .bez-nr{display:inline-block;margin-top:10px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);padding:6px 14px;border-radius:8px;font-family:'SF Mono',Menlo,Consolas,monospace;font-size:18px;font-weight:700;letter-spacing:1px}
   .bez-detail{font-size:12px;opacity:.75;margin-top:10px}
   .bez-konsole{margin-top:10px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:7px;padding:7px 11px;font-size:12.5px;color:#fff}
+  .kons-switch{display:flex;gap:6px;margin-bottom:7px}
+  .kons-btn{flex:1;padding:5px 8px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);border-radius:6px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+  .kons-btn.active{background:#f5e400;color:#3a3000;border-color:#f5e400}
+  .kons-inhalt{font-size:12.5px}
+  .bez-lager{margin-top:10px;background:rgba(44,108,184,.30);border:1px solid rgba(120,180,255,.5);border-radius:7px;padding:7px 11px;font-size:12.5px;color:#fff}
+  .bez-bestand{margin-top:10px;display:flex;align-items:flex-start;gap:8px;background:rgba(245,228,0,.15);border:1px solid rgba(245,228,0,.5);border-radius:7px;padding:8px 11px;font-size:12.5px;color:#fff;cursor:pointer}
+  .bez-bestand input{margin-top:2px;flex-shrink:0}
   .bez-add-btn{margin-top:12px;width:100%;padding:11px;background:var(--green);color:#fff;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit}
   .bez-add-btn:hover{filter:brightness(1.08)}
   /* Projektleiste */
@@ -177,6 +184,12 @@
     #printArea .psum-table .c-raum{color:#666;font-size:10.5px}
     #printArea .psum-bestand{border-color:#d4a017}
     #printArea .psum-bestand .psum-head{background:#d4a017;color:#3a2f08}
+    #printArea .psum-lager{border-color:#2c6cb8}
+    #printArea .psum-lager .psum-head{background:#2c6cb8;color:#fff}
+    #printArea .phk-lager{display:inline-block;background:#2c6cb8;color:#fff;font-size:10px;font-weight:700;padding:1px 8px;border-radius:5px;margin-left:6px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    #printArea .phk-bestand{display:inline-block;background:#f5e400;color:#3a3000;font-size:10px;font-weight:700;padding:1px 8px;border-radius:5px;margin-left:6px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    #printArea .phk-lager-box{border-left:3px solid #2c6cb8}
+    #printArea .phk-bestand-box{border-left:3px solid #f5e400;background:#fffdf0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
     #printArea .psum-note{padding:6px 12px;font-size:10px;color:#6b5a1e;background:#fff8e6;-webkit-print-color-adjust:exact;print-color-adjust:exact}
     #printArea table{width:100%;border-collapse:collapse;font-size:11.5px}
     #printArea td{padding:3px 6px;vertical-align:top}
@@ -194,6 +207,12 @@
   .hkkorb{background:#fff;border:1.5px solid var(--green);border-radius:12px;padding:16px 18px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
   .hkkorb h3{font-size:14px;color:var(--navy);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
   .hkkorb-item{display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin-bottom:7px;font-size:13px}
+  .hkkorb-item.item-bestand{background:#fdf9e3;border-color:#e0cf5a}
+  .korb-badge{display:inline-block;padding:1px 7px;border-radius:5px;font-size:10px;font-weight:700;margin-left:5px;white-space:nowrap}
+  .kb-lager{background:#2c6cb8;color:#fff}
+  .kb-bestand{background:#f5e400;color:#3a3000}
+  .mini-lager{color:#2c6cb8;font-weight:700}
+  .mini-bestand{background:#f5e400;color:#3a3000;padding:0 5px;border-radius:4px;font-size:10px;font-weight:700}
   .hkkorb-item .hi-name{font-weight:700;color:var(--navy);flex:1}
   .hkkorb-item .hi-menge{display:flex;align-items:center;gap:4px}
   .hkkorb-item .hi-menge button{border:1px solid var(--line);background:#fff;color:var(--navy);border-radius:5px;width:24px;height:24px;padding:0;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;line-height:1}
@@ -584,6 +603,46 @@ function kermiKonsole(bh, bl){
     setNr:k.set,                       // immer nötig (2 Konsolen)
     dritteNr: drei ? k.dritte : null,  // nur ab BL 1800 zusätzlich
     konsolen, text
+  };
+}
+
+/* ============================================================
+   KERMI therm-x2 STANDKONSOLE innenliegend (Bodenmontage)
+   Zwei Sets nach Bauhöhe (Rohrlänge 460 / 760 mm), passt für Typ 11/22/33.
+   Stückzahl wie Wandkonsole: bis BL 1600 = 2 Stück, ab BL 1800 = 3 Stück.
+   Sonderfall Typ 11 in Ventilausführung: Seitenausgleichsstück ZB01450001.
+   Art.-Nr. verifiziert (heizung-billiger / heizungsdiscount24).
+   ============================================================ */
+const KERMI_STANDKONSOLE_460 = 'ZB01380001'; // BH 300–554 mm (Rohrlänge 460 mm)
+const KERMI_STANDKONSOLE_760 = 'ZB01380002'; // BH 600–954 mm (Rohrlänge 760 mm)
+const KERMI_STAND_AUSGLEICH_T11V = 'ZB01450001'; // Seitenausgleichsstück Typ 11 Ventil
+const KERMI_STAND_BLENDE_FERTIG = 'ZB00290001';  // Abdeck-Blende Fertigbodenmontage (1 pro Konsole)
+const KERMI_STAND_3ER_AB_BL = 1800;
+
+function kermiStandkonsole(bh, bl, typ, v){
+  const drei = bl >= KERMI_STAND_3ER_AB_BL;
+  const konsolen = drei ? 3 : 2;
+  // Set nach Bauhöhe wählen
+  let artNr = null;
+  if(bh>=300 && bh<=554) artNr = KERMI_STANDKONSOLE_460;
+  else if(bh>=600 && bh<=954) artNr = KERMI_STANDKONSOLE_760;
+  // Seitenausgleichsstück nur bei Typ 11 + Ventil
+  const ausgleich = (String(typ)==='11' && v==='V') ? KERMI_STAND_AUSGLEICH_T11V : null;
+  // Fertigboden-Blende: 1 Stück je Standkonsole
+  const blende = KERMI_STAND_BLENDE_FERTIG;
+  if(!artNr){
+    return { verfuegbar:false, art:'stand', drei, konsolen, ausgleich, blende, blendeAnzahl:konsolen,
+      text:`Standkonsole für BH ${bh} mm – Art.-Nr. bitte im Kermi-Katalog prüfen (BH 200 mm: eigene Bodenmontage-Sets)` };
+  }
+  let text = `Standkonsole innenliegend: Art. ${artNr} (${konsolen} Stück) + Fertigboden-Blende Art. ${blende} (${konsolen} Stück)`;
+  if(ausgleich) text += ` + Seitenausgleichsstück Typ 11 Ventil: Art. ${ausgleich}`;
+  return {
+    verfuegbar:true, art:'stand', drei, konsolen,
+    artNr,             // Standkonsole, benötigte Anzahl = konsolen
+    blende,            // Fertigboden-Blende
+    blendeAnzahl:konsolen, // 1 Blende je Konsole
+    ausgleich,         // Seitenausgleichsstück Typ11 V oder null
+    text
   };
 }
 
@@ -1415,14 +1474,23 @@ function hkKorbAdd(){
   const a=AKTUELLE_AUSWAHL;
   const i=getInputs();
   const w = a.r.w!=null ? a.r.w : leistung(a.r.typ,a.r.bh,a.r.bl,i.tv,i.tr,i.tl);
-  // Konsole: Kermi therm-x2 ODER Verteo
+  const istBestand = !!a.istBestand;
+  const ausLager = !!a.lager;
+  // Konsole: Kermi therm-x2 (Wand oder Stand) ODER Verteo — aber NICHT bei Bestand (bleibt hängen)
   let konsole=null;
-  if(a.hersteller==='kermi') konsole=kermiKonsole(a.r.bh,a.r.bl);
-  else if(a.hersteller==='verteo') konsole=verteoKonsole(a.r.bh);
-  // Identischen HK (gleicher Hersteller/Typ/Maße/Ausführung) zusammenfassen -> Anzahl erhöhen
+  if(!istBestand){
+    if(a.hersteller==='kermi'){
+      konsole = (a.konsolenArt==='stand')
+        ? kermiStandkonsole(a.r.bh, a.r.bl, a.r.typ, a.r.v)
+        : kermiKonsole(a.r.bh, a.r.bl);
+    } else if(a.hersteller==='verteo') konsole=verteoKonsole(a.r.bh);
+  }
+  // Identischen HK zusammenfassen — Lager/Bestand/Konsolenart muss übereinstimmen
   const gleich = HK_KORB.find(h=>
     h.hersteller===a.hersteller && h.typ===a.r.typ &&
-    h.bh===a.r.bh && h.bl===a.r.bl && (h.v||'')===(a.r.v||''));
+    h.bh===a.r.bh && h.bl===a.r.bl && (h.v||'')===(a.r.v||'') &&
+    !!h.istBestand===istBestand && !!h.ausLager===ausLager &&
+    (h.konsole?h.konsole.art:'')===(konsole?konsole.art:''));
   if(gleich){
     gleich.anzahl = (gleich.anzahl||1) + 1;
   } else {
@@ -1432,7 +1500,9 @@ function hkKorbAdd(){
       hersteller:a.hersteller, dbName:a.dbName,
       modell:a.bez.modell, klartext:a.bez.klartext,
       bestellnr:a.bez.bestellnr||'– Sondermaß –',
-      konsole
+      konsole,
+      istBestand, ausLager,
+      lagerNotiz: ausLager ? (a.lager.notiz||'') : ''
     });
   }
   renderHkKorb();
@@ -1460,15 +1530,16 @@ function renderHkKorb(){
     ? HK_KORB.map((h,idx)=>{
         const anz=h.anzahl||1;
         const wGes=h.w*anz;
+        const badges = `${h.ausLager?'<span class="korb-badge kb-lager">📦 Lager</span>':''}${h.istBestand?'<span class="korb-badge kb-bestand">Bestand</span>':''}`;
         return `
-        <div class="hkkorb-item">
+        <div class="hkkorb-item${h.istBestand?' item-bestand':''}">
           <div class="hi-menge">
             <button onclick="hkKorbMenge(${idx},-1)" title="weniger">−</button>
             <span class="hi-anz">${anz}×</span>
             <button onclick="hkKorbMenge(${idx},1)" title="mehr">+</button>
           </div>
-          <span class="hi-name">${h.modell} · ${h.bh}×${h.bl} mm</span>
-          <span class="hi-nr">${h.bestellnr}</span>
+          <span class="hi-name">${h.modell} · ${h.bh}×${h.bl} mm ${badges}</span>
+          <span class="hi-nr">${h.istBestand?'– bleibt –':h.bestellnr}</span>
           <span class="hi-w">${anz>1?`${anz}×${h.w} = ${wGes} W`:`${h.w} W`}</span>
           <button class="hi-del" onclick="hkKorbRemove(${idx})">✕</button>
         </div>`;
@@ -1497,21 +1568,16 @@ function zeigeBezeichnung(idx){
   const w = (r.w!=null)? r.w : leistung(r.typ,r.bh,r.bl,i.tv,i.tr,i.tl);
   const cover = (r.cover!=null)? r.cover : (w!=null? w/i.heizlast : null);
   const b=db.bezeichnung(r.typ,r.bh,r.bl,r.v||'', i.anschluss);
-  AKTUELLE_AUSWAHL = {r:{...r, w, cover}, bez:b, hersteller:HERSTELLER, dbName:db.name};
+  AKTUELLE_AUSWAHL = {r:{...r, w, cover}, bez:b, hersteller:HERSTELLER, dbName:db.name, lager:r.lager||null, istBestand:false, konsolenArt:'wand'};
   const panel=document.getElementById('bezPanel');
   if(!panel) return;
   const nrHtml = b.bestellnr
     ? `<div class="bez-nr">${b.bestellnr}</div>`
     : `<div class="bez-nr" style="font-size:14px;color:var(--muted)">Bestellnr. nur über Preisliste (Sondermaß)</div>`;
-  // Kermi-Konsolen anzeigen (therm-x2 und Verteo)
+  // Kermi-Konsolen anzeigen (therm-x2 mit Wand/Stand-Umschalter, Verteo nur Wand)
   let konsoleHtml = '';
   if(HERSTELLER==='kermi'){
-    const k = kermiKonsole(r.bh, r.bl);
-    if(k.verfuegbar){
-      konsoleHtml = `<div class="bez-konsole">🔩 Konsolen: <b>Art. ${k.setNr}</b> – Schnellmontageset WA 30 mm weiß (2 Konsolen)${k.drei?` <b>+ Art. ${k.dritteNr}</b> – 3. Konsole (BL ≥ 1800 mm) = 3 Konsolen gesamt`:''}</div>`;
-    } else {
-      konsoleHtml = `<div class="bez-konsole">🔩 Konsolen für BH ${r.bh} mm – Art.-Nr. im Kermi-Katalog prüfen${k.drei?' (3-Konsolen-Set, BL ≥ 1800 mm)':''}</div>`;
-    }
+    konsoleHtml = konsolenPanelHTML(r, 'wand'); // Default Wandkonsole
   } else if(HERSTELLER==='verteo'){
     const k = verteoKonsole(r.bh);
     if(k.verfuegbar){
@@ -1520,6 +1586,10 @@ function zeigeBezeichnung(idx){
       konsoleHtml = `<div class="bez-konsole">🔩 Verteo-Konsolen für BH ${r.bh} mm – Art.-Nr. im Kermi-Katalog prüfen</div>`;
     }
   }
+  const lagerHinweisPanel = AKTUELLE_AUSWAHL.lager
+    ? `<div class="bez-lager">📦 Dieser Heizkörper liegt im <b>Lager</b>${AKTUELLE_AUSWAHL.lager.notiz?' ('+AKTUELLE_AUSWAHL.lager.notiz+')':''} – wird als Lagerware gekennzeichnet.</div>`
+    : '';
+  const bestandToggle = `<label class="bez-bestand"><input type="checkbox" id="bestandCheck" ${AKTUELLE_AUSWAHL.istBestand?'checked':''} onchange="toggleBestand(this.checked)"> <span>Bestandsheizkörper – bleibt hängen, wird <b>nicht getauscht</b> (keine Konsolen nötig)</span></label>`;
   const hinweisHtml = HK_MODE==='multi'
     ? `<button class="bez-add-btn" onclick="hkKorbAdd()">+ diesen Heizkörper zum Raum hinzufügen</button>`
     : `<div class="bez-detail">${b.detail} · Leistung ${w!=null?Math.round(w):'–'} W bei aktuellen Bedingungen · <b>jetzt „+ Raum speichern“ klicken</b></div>`;
@@ -1530,11 +1600,53 @@ function zeigeBezeichnung(idx){
       <div class="bez-klar">${b.klartext}</div>
       ${nrHtml}
       ${konsoleHtml}
+      ${lagerHinweisPanel}
+      ${bestandToggle}
       ${HK_MODE==='multi'?`<div class="bez-detail">${b.detail} · Leistung ${w!=null?Math.round(w):'–'} W</div>`:''}
       ${hinweisHtml}
     </div>`;
   // markiere aktive Zeile
   document.querySelectorAll('.clickrow').forEach(tr=>tr.classList.toggle('active-row', +tr.dataset.idx===idx));
+}
+
+// Bestand-Schalter im Panel: HK bleibt hängen, wird nicht getauscht, braucht keine Konsolen
+function toggleBestand(checked){
+  if(AKTUELLE_AUSWAHL) AKTUELLE_AUSWAHL.istBestand = !!checked;
+}
+
+// Konsolen-Panel für Kermi therm-x2 mit Wand/Stand-Umschalter
+function konsolenPanelHTML(r, art){
+  const wand = kermiKonsole(r.bh, r.bl);
+  const stand = kermiStandkonsole(r.bh, r.bl, r.typ, r.v);
+  const umschalter = `<div class="kons-switch">
+      <button class="kons-btn${art==='wand'?' active':''}" onclick="setKonsolenArt('wand')">Wandkonsole</button>
+      <button class="kons-btn${art==='stand'?' active':''}" onclick="setKonsolenArt('stand')">Standkonsole</button>
+    </div>`;
+  let inhalt;
+  if(art==='stand'){
+    if(stand.verfuegbar){
+      inhalt = `<b>Art. ${stand.artNr}</b> – Standkonsole innenliegend (${stand.konsolen} Stück${stand.drei?', BL ≥ 1800 mm':''})<br><b>+ Art. ${stand.blende}</b> – Fertigboden-Blende (${stand.blendeAnzahl} Stück)${stand.ausgleich?`<br><b>+ Art. ${stand.ausgleich}</b> – Seitenausgleichsstück Typ 11 Ventil`:''}`;
+    } else {
+      inhalt = stand.text;
+    }
+  } else {
+    if(wand.verfuegbar){
+      inhalt = `<b>Art. ${wand.setNr}</b> – Schnellmontageset WA 30 mm weiß (2 Konsolen)${wand.drei?` <b>+ Art. ${wand.dritteNr}</b> – 3. Konsole (BL ≥ 1800 mm) = 3 gesamt`:''}`;
+    } else {
+      inhalt = `für BH ${r.bh} mm – Art.-Nr. im Kermi-Katalog prüfen${wand.drei?' (3-Konsolen-Set, BL ≥ 1800 mm)':''}`;
+    }
+  }
+  return `<div class="bez-konsole" id="konsPanel">${umschalter}<div class="kons-inhalt">🔩 ${inhalt}</div></div>`;
+}
+
+// Wand/Stand umschalten – aktualisiert Auswahl und Panel-Anzeige
+function setKonsolenArt(art){
+  if(!AKTUELLE_AUSWAHL) return;
+  AKTUELLE_AUSWAHL.konsolenArt = art;
+  const panel=document.getElementById('konsPanel');
+  if(panel){
+    panel.outerHTML = konsolenPanelHTML(AKTUELLE_AUSWAHL.r, art);
+  }
 }
 
 /* ============================================================
@@ -2168,7 +2280,8 @@ function speichereRaum(){
       anzahl: h.anzahl||1,
       leistung:h.w, leistungGesamt:h.w*(h.anzahl||1),
       modell:h.modell, klartext:h.klartext,
-      bestellnr:h.bestellnr, konsole:h.konsole
+      bestellnr:h.bestellnr, konsole:h.konsole,
+      istBestand: !!h.istBestand, ausLager: !!h.ausLager, lagerNotiz: h.lagerNotiz||''
     }));
     const raum={
       name, ts:Date.now(), mehrfach:true,
@@ -2200,16 +2313,22 @@ function speichereRaum(){
   // ===== SINGLE-MODUS: ein Heizkörper (wie bisher) =====
   if(!AKTUELLE_AUSWAHL){ alert('Bitte zuerst einen Heizkörper in der Ergebnistabelle anklicken (in Tab ①, ② oder ③).'); return; }
   const a=AKTUELLE_AUSWAHL;
+  const istBestandS = !!a.istBestand;
+  const ausLagerS = !!a.lager;
   const herstellerVorher=HERSTELLER;
   HERSTELLER=a.hersteller;
   const rv=requiredVL(a.r.typ,a.r.bh,a.r.bl,bedarf,spreizung,i.tl);
   const er=erreichbareRaumtemp(a.r.typ,a.r.bh,a.r.bl,i);
   const typLabelStr=DB().typLabel(a.r.typ);
   let konsole=null;
-  if(a.hersteller==='kermi'){
-    konsole=kermiKonsole(a.r.bh, a.r.bl);
-  } else if(a.hersteller==='verteo'){
-    konsole=verteoKonsole(a.r.bh);
+  if(!istBestandS){
+    if(a.hersteller==='kermi'){
+      konsole = (a.konsolenArt==='stand')
+        ? kermiStandkonsole(a.r.bh, a.r.bl, a.r.typ, a.r.v)
+        : kermiKonsole(a.r.bh, a.r.bl);
+    } else if(a.hersteller==='verteo'){
+      konsole=verteoKonsole(a.r.bh);
+    }
   }
   HERSTELLER=herstellerVorher;
   const raum={
@@ -2224,7 +2343,8 @@ function speichereRaum(){
       leistung:Math.round(a.r.w), deckung:Math.round(a.r.cover*100),
       modell:a.bez.modell, klartext:a.bez.klartext,
       bestellnr:a.bez.bestellnr||'– über Preisliste (Sondermaß) –',
-      detail:a.bez.detail
+      detail:a.bez.detail,
+      istBestand:istBestandS, ausLager:ausLagerS, lagerNotiz: ausLagerS?(a.lager.notiz||''):''
     },
     konsole,
     noetigeVL: rv? (rv.oversized? '≤'+rv.tv.toFixed(1) : rv.tv.toFixed(1)) : '–',
@@ -2256,13 +2376,17 @@ function renderRaumliste(){
     let info, nr;
     if(r.mehrfach){
       const anzGesamt = r.hkliste.reduce((s,h)=>s+(h.anzahl||1),0);
-      const liste = r.hkliste.map(h=>`${(h.anzahl||1)>1?(h.anzahl+'× '):''}${h.modell} ${h.bh}×${h.bl}`).join(' + ');
+      const liste = r.hkliste.map(h=>{
+        const tag = `${h.ausLager?' <span class="mini-lager">📦</span>':''}${h.istBestand?' <span class="mini-bestand">Bestand</span>':''}`;
+        return `${(h.anzahl||1)>1?(h.anzahl+'× '):''}${h.modell} ${h.bh}×${h.bl}${tag}`;
+      }).join(' + ');
       info = `${anzGesamt} HK: ${liste} · Σ ${r.gesamtleistung} W bei ${r.tv}/${r.tr} °C · Heizlast ${r.heizlast} W ${r.gedeckt?'✓':'⚠'}`;
-      // Bestellnummern mit Menge (2× FK... nur einmal listen)
-      nr = r.hkliste.map(h=>`${(h.anzahl||1)>1?(h.anzahl+'× '):''}${h.bestellnr}`).join(', ');
+      // Bestellnummern mit Menge — Bestand-HK werden nicht bestellt
+      nr = r.hkliste.filter(h=>!h.istBestand).map(h=>`${(h.anzahl||1)>1?(h.anzahl+'× '):''}${h.bestellnr}`).join(', ');
     } else {
-      info = `${r.hk.modell} · ${r.hk.bh}×${r.hk.bl} mm · ${r.hk.leistung} W bei ${r.tv}/${r.tr} °C · Heizlast ${r.heizlast} W`;
-      nr = r.hk.bestellnr;
+      const tag = `${r.hk.ausLager?' <span class="mini-lager">📦 Lager</span>':''}${r.hk.istBestand?' <span class="mini-bestand">Bestand</span>':''}`;
+      info = `${r.hk.modell} · ${r.hk.bh}×${r.hk.bl} mm${tag} · ${r.hk.leistung} W bei ${r.tv}/${r.tr} °C · Heizlast ${r.heizlast} W`;
+      nr = r.hk.istBestand ? '– bleibt (Bestand) –' : r.hk.bestellnr;
     }
     return `
     <div class="raumchip${r.bestand?' raumchip-bestand':''}">
@@ -2304,14 +2428,18 @@ function druckeBericht(){
     // Konsolen-Zelle als Helfer
     const konsoleZelle=(k,bh)=>{
       if(!k) return '';
-      const label = k.art==='verteo' ? 'Wandkonsolen (Verteo-Set)' : 'Wandkonsolen (Schnellmontageset)';
+      const label = k.art==='verteo' ? 'Wandkonsolen (Verteo-Set)' : k.art==='stand' ? 'Standkonsolen (innenliegend)' : 'Wandkonsolen (Schnellmontageset)';
       let inhalt;
       if(!k.verfuegbar){
         inhalt = k.art==='verteo'
           ? `Art.-Nr. für Verteo BH ${bh} mm im Kermi-Katalog prüfen`
+          : k.art==='stand'
+          ? `Standkonsole für BH ${bh} mm im Kermi-Katalog prüfen`
           : `Art.-Nr. für BH ${bh} mm im Kermi-Katalog prüfen${k.drei?' (3-Konsolen-Set, BL ≥ 1800 mm)':''}`;
       } else if(k.art==='verteo'){
         inhalt = `<span class="pnr">Art. ${k.artNr}</span> – Verteo Wandkonsolen-Set lang, weiß (1 Set)`;
+      } else if(k.art==='stand'){
+        inhalt = `<span class="pnr">Art. ${k.artNr}</span> – Standkonsole innenliegend · <b>${k.konsolen} Stück</b>${k.drei?' (BL ≥ 1800 mm)':''}<br><span class="pnr">Art. ${k.blende}</span> – Fertigboden-Blende · <b>${k.blendeAnzahl} Stück</b>${k.ausgleich?`<br><span class="pnr">Art. ${k.ausgleich}</span> – Seitenausgleichsstück Typ 11 Ventil`:''}`;
       } else {
         inhalt = `<span class="pnr">Art. ${k.setNr}</span> – Schnellmontageset WA 30 mm weiß (2 Konsolen)${k.drei?`<br><span class="pnr">Art. ${k.dritteNr}</span> – 3. Konsole (BL ≥ 1800 mm) · <b>zusammen 3 Konsolen</b>`:''}`;
       }
@@ -2324,28 +2452,40 @@ function druckeBericht(){
         const anz=h.anzahl||1;
         const mengeTxt = anz>1?` <span style="color:#a83232">(${anz} Stück)</span>`:'';
         const leistungTxt = anz>1?`${anz} × ${h.leistung} W = <b>${h.leistungGesamt||h.leistung*anz} W</b>`:`<b>${h.leistung} W</b>`;
-        // Konsolen-Zeile (therm-x2 oder Verteo), Menge bei n× berücksichtigt
+        // Status-Kennzeichnung für den Monteur
+        const statusBadge = h.istBestand
+          ? `<span class="phk-bestand">Bestand – wird NICHT getauscht</span>`
+          : (h.ausLager ? `<span class="phk-lager">📦 aus Lager${h.lagerNotiz?' ('+h.lagerNotiz+')':''}</span>` : '');
+        // Konsolen-Zeile — bei Bestand entfällt sie (bleibt hängen)
         let konsZelle = '';
-        if(h.konsole){
-          const label = h.konsole.art==='verteo' ? 'Wandkonsolen (Verteo-Set)' : 'Wandkonsolen (Schnellmontageset)';
+        if(h.konsole && !h.istBestand){
+          const label = h.konsole.art==='verteo' ? 'Wandkonsolen (Verteo-Set)' : h.konsole.art==='stand' ? 'Standkonsolen (innenliegend)' : 'Wandkonsolen (Schnellmontageset)';
           const mengePref = anz>1?`<b>${anz}×</b> `:'';
           let inhalt;
           if(!h.konsole.verfuegbar){
             inhalt = h.konsole.art==='verteo'
               ? `Art.-Nr. für Verteo BH ${h.bh} mm im Kermi-Katalog prüfen`
+              : h.konsole.art==='stand'
+              ? `Standkonsole für BH ${h.bh} mm im Kermi-Katalog prüfen`
               : `Art.-Nr. für BH ${h.bh} mm im Kermi-Katalog prüfen${h.konsole.drei?' (3-Konsolen-Set, BL ≥ 1800 mm)':''}`;
           } else if(h.konsole.art==='verteo'){
             inhalt = `${mengePref}<span class="pnr">Art. ${h.konsole.artNr}</span> – Verteo Wandkonsolen-Set lang, weiß`;
+          } else if(h.konsole.art==='stand'){
+            inhalt = `${mengePref}<span class="pnr">Art. ${h.konsole.artNr}</span> – Standkonsole innenliegend (${h.konsole.konsolen} Stück)<br>${mengePref}<span class="pnr">Art. ${h.konsole.blende}</span> – Fertigboden-Blende (${h.konsole.blendeAnzahl} Stück)${h.konsole.ausgleich?`<br>${mengePref}<span class="pnr">Art. ${h.konsole.ausgleich}</span> – Seitenausgleichsstück Typ 11 Ventil`:''}`;
           } else {
             inhalt = `${mengePref}<span class="pnr">Art. ${h.konsole.setNr}</span> – WA 30 mm weiß (2 Kons.)${h.konsole.drei?`<br>${mengePref}<span class="pnr">Art. ${h.konsole.dritteNr}</span> – 3. Konsole (BL ≥ 1800 mm)`:''}`;
           }
           konsZelle = `<tr><td>${label}</td><td>${inhalt}</td></tr>`;
         }
+        // Bestellzeile: bei Bestand kein Neukauf
+        const bestellZeile = h.istBestand
+          ? `<tr><td>Status</td><td><b>Bestandsheizkörper – bleibt hängen, keine Bestellung, keine Konsolen</b></td></tr>`
+          : `<tr><td>Bestellnummer Großhandel${anz>1?` (${anz}× bestellen)`:''}</td><td class="pnr">${anz>1?`${anz}× `:''}${h.bestellnr}</td></tr>`;
         return `
-        <table style="margin-bottom:8px">
-          <tr><td style="width:42%"><b>Heizkörper ${n+1}</b>${mengeTxt}</td><td><b>${h.modell}</b></td></tr>
+        <table style="margin-bottom:8px" class="${h.istBestand?'phk-bestand-box':(h.ausLager?'phk-lager-box':'')}">
+          <tr><td style="width:42%"><b>Heizkörper ${n+1}</b>${mengeTxt} ${statusBadge}</td><td><b>${h.modell}</b></td></tr>
           <tr><td>Abmessungen (BH × BL × BT)</td><td>${h.bh} × ${h.bl} × ${h.bt} mm</td></tr>
-          <tr><td>Bestellnummer Großhandel${anz>1?` (${anz}× bestellen)`:''}</td><td class="pnr">${anz>1?`${anz}× `:''}${h.bestellnr}</td></tr>
+          ${bestellZeile}
           <tr><td>Bezeichnung</td><td>${h.klartext}</td></tr>
           ${konsZelle}
           <tr><td>Leistung bei ${r.tv}/${r.tr}/${r.tl} °C</td><td>${leistungTxt}</td></tr>
@@ -2370,16 +2510,22 @@ function druckeBericht(){
     }
 
     // Einzelner Heizkörper (wie bisher)
+    const einzelStatus = r.hk.istBestand
+      ? `<span class="phk-bestand">Bestand – wird NICHT getauscht</span>`
+      : (r.hk.ausLager ? `<span class="phk-lager">📦 aus Lager${r.hk.lagerNotiz?' ('+r.hk.lagerNotiz+')':''}</span>` : '');
+    const einzelBestell = r.hk.istBestand
+      ? `<tr><td>Status</td><td><b>Bestandsheizkörper – bleibt hängen, keine Bestellung, keine Konsolen</b></td></tr>`
+      : `<tr><td>Bestellnummer Großhandel</td><td class="pnr">${r.hk.bestellnr}</td></tr>`;
     return `
     <div class="proom">
       <h3>${r.name}</h3>
       ${r.bestand?`<div class="pbestand">Bestand – bleibt vorerst</div>`:''}
-      <table>
-        <tr><td>Heizkörper</td><td><b>${r.hersteller} – ${r.hk.modell}</b></td></tr>
+      <table class="${r.hk.istBestand?'phk-bestand-box':(r.hk.ausLager?'phk-lager-box':'')}">
+        <tr><td>Heizkörper</td><td><b>${r.hersteller} – ${r.hk.modell}</b> ${einzelStatus}</td></tr>
         <tr><td>Abmessungen (BH × BL × BT)</td><td>${r.hk.bh} × ${r.hk.bl} × ${r.hk.bt} mm</td></tr>
-        <tr><td>Bestellnummer Großhandel</td><td class="pnr">${r.hk.bestellnr}</td></tr>
+        ${einzelBestell}
         <tr><td>Bezeichnung</td><td>${r.hk.klartext}</td></tr>
-        ${konsoleZelle(r.konsole,r.hk.bh)}
+        ${r.hk.istBestand?'':konsoleZelle(r.konsole,r.hk.bh)}
         <tr><td>Heizlast Raum / Bedarf inkl. ${r.reserve}% Reserve</td><td>${r.heizlast} W / ${r.bedarf} W</td></tr>
         <tr><td>Leistung bei Auslegung ${r.tv}/${r.tr}/${r.tl} °C</td><td><b>${r.hk.leistung} W</b> (Deckung ${r.hk.deckung}% der Heizlast)</td></tr>
         <tr><td>Nötige Vorlauftemperatur für Volldeckung</td><td>${r.noetigeVL} °C (Spreizung ${r.tv-r.tr} K)</td></tr>
@@ -2414,8 +2560,8 @@ function druckeBericht(){
 
   /* ---------- ZUSAMMENFASSUNG: Bestellung & Bestand ---------- */
   // Alle Heizkörper aus allen Räumen sammeln (getrennt nach bestellen / Bestand)
-  const bestellHK = {};   // key -> {modell, klartext, bestellnr, bh, bl, anzahl, raeume[]}
-  const bestandHK = {};   // dito für Bestand-Räume
+  const bestellHK = {};   // key -> {modell, klartext, bestellnr, bh, bl, anzahl, raeume[], ausLager}
+  const bestandHK = {};   // dito für Bestand (ganzer Raum ODER einzelner HK)
   const bestellKons = {}; // artNr -> {artNr, bez, anzahl}
 
   function addKonsole(k, menge){
@@ -2424,8 +2570,24 @@ function druckeBericht(){
       const key=k.artNr;
       bestellKons[key] = bestellKons[key] || {artNr:key, bez:'Verteo Wandkonsolen-Set lang, weiß', anzahl:0};
       bestellKons[key].anzahl += menge;
+    } else if(k.art==='stand'){
+      // Standkonsole: benötigte Anzahl = k.konsolen (2 oder 3) je HK
+      const key=k.artNr;
+      bestellKons[key] = bestellKons[key] || {artNr:key, bez:'Standkonsole innenliegend, weiß', anzahl:0};
+      bestellKons[key].anzahl += menge * (k.konsolen||2);
+      // Fertigboden-Blende: 1 je Standkonsole
+      if(k.blende){
+        const bl=k.blende;
+        bestellKons[bl] = bestellKons[bl] || {artNr:bl, bez:'Fertigboden-Blende weiß (je Konsole)', anzahl:0};
+        bestellKons[bl].anzahl += menge * (k.blendeAnzahl||k.konsolen||2);
+      }
+      if(k.ausgleich){
+        const a=k.ausgleich;
+        bestellKons[a] = bestellKons[a] || {artNr:a, bez:'Seitenausgleichsstück Typ 11 Ventil', anzahl:0};
+        bestellKons[a].anzahl += menge;
+      }
     } else {
-      // therm-x2: Set immer, 3. Konsole zusätzlich ab BL 1800
+      // therm-x2 Wand: Set immer, 3. Konsole zusätzlich ab BL 1800
       const s=k.setNr;
       bestellKons[s] = bestellKons[s] || {artNr:s, bez:'Schnellmontageset WA 30 mm weiß (2 Konsolen)', anzahl:0};
       bestellKons[s].anzahl += menge;
@@ -2438,21 +2600,24 @@ function druckeBericht(){
   }
 
   PROJEKT.raeume.forEach(r=>{
-    const ziel = r.bestand ? bestandHK : bestellHK;
     const raumLabel = (r.etage?r.etage+' · ':'')+r.name;
     const hkArr = r.mehrfach ? r.hkliste : [{
       modell:r.hk.modell, klartext:r.hk.klartext, bestellnr:r.hk.bestellnr,
-      bh:r.hk.bh, bl:r.hk.bl, anzahl:1, konsole:r.konsole
+      bh:r.hk.bh, bl:r.hk.bl, anzahl:1, konsole:r.konsole,
+      istBestand:r.hk.istBestand, ausLager:r.hk.ausLager, lagerNotiz:r.hk.lagerNotiz
     }];
     hkArr.forEach(h=>{
       const anz = h.anzahl||1;
-      const key = `${h.bestellnr}|${h.bh}x${h.bl}`;
+      // Bestand: ganzer Raum als Bestand ODER einzelner HK als Bestand -> nicht bestellen
+      const istBestand = r.bestand || h.istBestand;
+      const ziel = istBestand ? bestandHK : bestellHK;
+      const key = `${h.bestellnr}|${h.bh}x${h.bl}|${h.ausLager?'L':''}`;
       ziel[key] = ziel[key] || {modell:h.modell, klartext:h.klartext, bestellnr:h.bestellnr,
-                                bh:h.bh, bl:h.bl, anzahl:0, raeume:[]};
+                                bh:h.bh, bl:h.bl, anzahl:0, raeume:[], ausLager:!!h.ausLager, lagerNotiz:h.lagerNotiz||''};
       ziel[key].anzahl += anz;
       if(!ziel[key].raeume.includes(raumLabel)) ziel[key].raeume.push(raumLabel);
-      // Konsolen nur für zu bestellende HK (Bestand braucht keine neuen Konsolen)
-      if(!r.bestand) addKonsole(h.konsole, anz);
+      // Konsolen nur für zu bestellende HK (weder Bestand noch – bei Lager – bereits vorhanden)
+      if(!istBestand) addKonsole(h.konsole, anz);
     });
   });
 
@@ -2465,21 +2630,45 @@ function druckeBericht(){
 
   let zusammenfassung = '';
   if(bestellListe.length){
-    zusammenfassung += `
-    <div class="psum">
-      <div class="psum-head">Zu bestellende Heizkörper <span>${summeHK} Stück</span></div>
-      <table class="psum-table">
-        <thead><tr><th class="c-menge">Menge</th><th>Bestellnummer</th><th>Bezeichnung</th><th>Räume</th></tr></thead>
-        <tbody>
-          ${bestellListe.map(h=>`<tr>
-            <td class="c-menge"><b>${h.anzahl}×</b></td>
-            <td class="pnr">${h.bestellnr}</td>
-            <td>${h.klartext}</td>
-            <td class="c-raum">${h.raeume.join(', ')}</td>
-          </tr>`).join('')}
-        </tbody>
-      </table>
-    </div>`;
+    // Lager-HK von echten Bestellungen trennen
+    const echtBestellen = bestellListe.filter(h=>!h.ausLager);
+    const ausLagerNehmen = bestellListe.filter(h=>h.ausLager);
+    const summeEcht = echtBestellen.reduce((s,h)=>s+h.anzahl,0);
+    if(echtBestellen.length){
+      zusammenfassung += `
+      <div class="psum">
+        <div class="psum-head">Zu bestellende Heizkörper <span>${summeEcht} Stück</span></div>
+        <table class="psum-table">
+          <thead><tr><th class="c-menge">Menge</th><th>Bestellnummer</th><th>Bezeichnung</th><th>Räume</th></tr></thead>
+          <tbody>
+            ${echtBestellen.map(h=>`<tr>
+              <td class="c-menge"><b>${h.anzahl}×</b></td>
+              <td class="pnr">${h.bestellnr}</td>
+              <td>${h.klartext}</td>
+              <td class="c-raum">${h.raeume.join(', ')}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`;
+    }
+    if(ausLagerNehmen.length){
+      zusammenfassung += `
+      <div class="psum psum-lager">
+        <div class="psum-head">📦 Aus dem Lager entnehmen <span>${ausLagerNehmen.reduce((s,h)=>s+h.anzahl,0)} Stück</span></div>
+        <table class="psum-table">
+          <thead><tr><th class="c-menge">Menge</th><th>Bezeichnung</th><th>Lagerplatz</th><th>Räume</th></tr></thead>
+          <tbody>
+            ${ausLagerNehmen.map(h=>`<tr>
+              <td class="c-menge"><b>${h.anzahl}×</b></td>
+              <td>${h.klartext}</td>
+              <td>${h.lagerNotiz||'–'}</td>
+              <td class="c-raum">${h.raeume.join(', ')}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+        <div class="psum-note">Diese Heizkörper sind bereits im Lager vorhanden – nicht neu bestellen, sondern entnehmen.</div>
+      </div>`;
+    }
   }
   if(konsListe.length){
     zusammenfassung += `
