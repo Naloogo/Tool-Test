@@ -1,0 +1,103 @@
+{
+  "_hinweis": "Lagerbestand Lutz Spring GmbH. Neben heizkoerper.html im selben Ordner ablegen. Felder: hersteller (kermi|verteo|arbonia|zehnder), typ, bh, bl, stueck. Optional: v ('K'/'V' bei Kermi), bauform ('profil'/'plan' bei Kermi therm-x2), anschluss ('rechts'/'links' bei Ventilausführung V), notiz.",
+  "stand": "2026-08-12",
+  "bestand": [
+    {
+      "hersteller": "kermi",
+      "typ": "33",
+      "bh": 600,
+      "bl": 2600,
+      "stueck": 1,
+      "v": "K",
+      "bauform": "profil"
+    },
+    {
+      "hersteller": "kermi",
+      "typ": "22",
+      "bh": 600,
+      "bl": 600,
+      "stueck": 1,
+      "v": "V",
+      "bauform": "profil",
+      "anschluss": "links"
+    },
+    {
+      "hersteller": "kermi",
+      "typ": "33",
+      "bh": 600,
+      "bl": 1000,
+      "stueck": 1,
+      "v": "V",
+      "bauform": "profil",
+      "anschluss": "rechts"
+    },
+    {
+      "hersteller": "kermi",
+      "typ": "33",
+      "bh": 605,
+      "bl": 1005,
+      "stueck": 1,
+      "v": "V",
+      "bauform": "plan",
+      "anschluss": "rechts"
+    },
+    {
+      "hersteller": "kermi",
+      "typ": "33",
+      "bh": 605,
+      "bl": 1105,
+      "stueck": 1,
+      "v": "V",
+      "bauform": "plan",
+      "anschluss": "links"
+    },
+    {
+      "hersteller": "kermi",
+      "typ": "33",
+      "bh": 500,
+      "bl": 1600,
+      "stueck": 1,
+      "v": "K",
+      "bauform": "profil"
+    },
+    {
+      "hersteller": "kermi",
+      "typ": "22",
+      "bh": 300,
+      "bl": 1600,
+      "stueck": 1,
+      "v": "V",
+      "bauform": "profil",
+      "anschluss": "links"
+    },
+    {
+      "hersteller": "kermi",
+      "typ": "33",
+      "bh": 600,
+      "bl": 1800,
+      "stueck": 1,
+      "v": "V",
+      "bauform": "profil",
+      "anschluss": "rechts"
+    },
+    {
+      "hersteller": "kermi",
+      "typ": "33",
+      "bh": 500,
+      "bl": 1800,
+      "stueck": 1,
+      "v": "K",
+      "bauform": "profil"
+    },
+    {
+      "hersteller": "kermi",
+      "typ": "33",
+      "bh": 505,
+      "bl": 1805,
+      "stueck": 1,
+      "v": "V",
+      "bauform": "plan",
+      "anschluss": "links"
+    }
+  ]
+}
