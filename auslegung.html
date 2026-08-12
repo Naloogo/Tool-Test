@@ -528,6 +528,10 @@
         <label class="fld">Beheizte Wohnfläche</label>
         <div class="row"><input type="range" id="flaeche" min="60" max="800" value="120" step="5" style="flex:1;"><input type="number" id="flaeche-num" value="120" min="20" step="5" class="val-input"><span class="unit">m²</span></div>
       </div>
+      <div>
+        <label class="fld">Wohneinheiten</label>
+        <div class="row"><input type="range" id="wohneinheiten" min="1" max="20" value="1" step="1" style="flex:1;"><input type="number" id="wohneinheiten-num" value="1" min="1" step="1" class="val-input"><span class="unit">WE</span></div>
+      </div>
       <div id="personen-wrap">
         <label class="fld">Personen (Warmwasser)</label>
         <div class="row"><input type="range" id="personen" min="1" max="16" value="2" step="1" style="flex:1;"><input type="number" id="personen-num" value="2" min="1" step="1" class="val-input"><span class="unit">Pers.</span></div>
@@ -1422,6 +1426,7 @@
 
   function calc(){
     var flaeche = parseFloat(el("flaeche-num").value) || 0;
+    var wohneinheiten = parseFloat(el("wohneinheiten-num").value) || 1;
     var personen = parseFloat(el("personen-num").value) || 1;
     var apTemp = parseFloat(el("ap").value);
     var normAT = parseFloat(el("norm-at").value);
@@ -1612,7 +1617,7 @@
 
     // ---- Druck-Zusammenfassung befüllen ----
     befuelleDruck({
-      flaeche:flaeche, personen:personen, apTemp:apTemp, vl:vl,
+      flaeche:flaeche, wohneinheiten:wohneinheiten, personen:personen, apTemp:apTemp, vl:vl,
       hlVerbrauch:hlVerbrauch, hlGebaeude:hlGebaeude, geb:geb, hlFinal:hlFinal, wwZuschlag:wwZuschlag,
       gewaehlt:gewaehlt, apLeistung:apLeistung, deckung:deckung, heizstabAnteil:heizstabAnteil,
       statusTxt:statusTxt, bivTxt:bivTxt, taktRisiko:taktRisiko, altVlInfo:altVlInfo, komponenten:komponenten, normAT:normAT, lastAmBivalenzpunkt:lastAmBivalenzpunkt, leistungBeiNormAT:leistungBeiNormAT, heizstabBeiNormAT:heizstabBeiNormAT
@@ -1638,6 +1643,7 @@
     // Gebäude
     var g = "";
     g += zeile("Beheizte Wohnfläche", r0(d.flaeche)+" m²");
+    g += zeile("Wohneinheiten", r0(d.wohneinheiten));
     if(wpAufgabe !== "nur_heizung") g += zeile("Personen (Warmwasser)", r0(d.personen));
     if(gebMode === "schnell"){
       g += zeile("Methode Gebäudehülle", "Pauschale");
@@ -1794,7 +1800,7 @@
   // ---- Kundenliste (lokal gespeichert, überlebt Schließen/Neuöffnen) ----
   var STORAGE_KEY = "lutzspring_evoblock_kunden_v2";
   var WORK_KEY = "lutzspring_evoblock_work_v2";
-  var alleInputs = ["flaeche","flaeche-num","personen","personen-num","ap","norm-at","vl","streng","pauschale","oel-verbrauch","oel-eta","gas-verbrauch","gas-eta","wp-strom","wp-jaz","d-baujahr","d-fenster","d-wand-mat","d-wand-dicke","d-wand-daemm","d-dach","u-wand-a","u-wand-u","u-dach-a","u-dach-u","u-fen-a","u-fen-u","u-bod-a","u-bod-u","hf-hk-anzahl","hf-beides-hk","hf-beides-vlhk","hf-beides-vlfbh","alt-vl-wert","alt-vl-komfort","bes-bestand","bes-heizflaechen","bes-gebaeude","bes-auslegung","sp-was","sp-wes","sp-wms"];
+  var alleInputs = ["flaeche","flaeche-num","wohneinheiten","wohneinheiten-num","personen","personen-num","ap","norm-at","vl","streng","pauschale","oel-verbrauch","oel-eta","gas-verbrauch","gas-eta","wp-strom","wp-jaz","d-baujahr","d-fenster","d-wand-mat","d-wand-dicke","d-wand-daemm","d-dach","u-wand-a","u-wand-u","u-dach-a","u-dach-u","u-fen-a","u-fen-u","u-bod-a","u-bod-u","hf-hk-anzahl","hf-beides-hk","hf-beides-vlhk","hf-beides-vlfbh","alt-vl-wert","alt-vl-komfort","bes-bestand","bes-heizflaechen","bes-gebaeude","bes-auslegung","sp-was","sp-wes","sp-wms"];
 
   var kunden = [];        // [{id, name, stand}]
   var aktuelleId = null;  // id des geladenen Kunden, null = ungespeicherter Arbeitsstand
@@ -1871,7 +1877,7 @@
         else { e.value = stand.felder[id]; }
       });
       // Regler an wiederhergestellte Zahlenwerte angleichen (begrenzt aufs Regler-Maximum)
-      [["flaeche","flaeche-num"],["personen","personen-num"]].forEach(function(pair){
+      [["flaeche","flaeche-num"],["wohneinheiten","wohneinheiten-num"],["personen","personen-num"]].forEach(function(pair){
         var regler = el(pair[0]), zahl = el(pair[1]);
         if(regler && zahl){
           var v = parseFloat(zahl.value), max = parseFloat(regler.max), min = parseFloat(regler.min);
@@ -2026,11 +2032,12 @@
   }
   koppleReglerZahl("flaeche", "flaeche-num");
   koppleReglerZahl("personen", "personen-num");
+  koppleReglerZahl("wohneinheiten", "wohneinheiten-num");
 
   alleInputs.forEach(function(id){
     var e = el(id);
     // Regler und ihre Zahlenfelder haben eigene Handler (koppleReglerZahl) - hier überspringen
-    if(id==="flaeche"||id==="personen"||id==="flaeche-num"||id==="personen-num"){
+    if(id==="flaeche"||id==="personen"||id==="wohneinheiten"||id==="flaeche-num"||id==="personen-num"||id==="wohneinheiten-num"){
       return;
     }
     if(e){
