@@ -460,6 +460,35 @@
           <label class="fld">Anzahl Heizkörper</label>
           <div class="row"><input type="number" id="hf-hk-anzahl" value="8" min="0" max="60" step="1" style="flex:1;"><span class="unit">Stück</span></div>
         </div>
+        <div>
+          <label class="fld">Rohrsystem</label>
+          <div class="segment" id="hk-system">
+            <button type="button" data-hksys="zweirohr" class="active">Zweirohr</button>
+            <button type="button" data-hksys="einrohr">Einrohr</button>
+          </div>
+        </div>
+      </div>
+      <div class="uwert-hint" id="hk-system-hint" style="margin-top:8px;"></div>
+
+      <div style="border-top:1px solid var(--border); margin-top:14px; padding-top:14px;">
+        <div class="grid-in">
+          <div>
+            <label class="fld">RTL-Boxen vorhanden? <span style="color:var(--text-3); font-weight:400;">(Rücklauftemperaturbegrenzer)</span></label>
+            <div class="segment" id="rtl">
+              <button type="button" data-rtl="nein" class="active">Nein</button>
+              <button type="button" data-rtl="ja">Ja</button>
+            </div>
+          </div>
+          <div id="rtl-anzahl-wrap" style="display:none;">
+            <label class="fld">Anzahl RTL-Boxen</label>
+            <div class="row"><input type="number" id="rtl-anzahl" value="1" min="1" max="40" step="1" style="flex:1;"><span class="unit">Stück</span></div>
+          </div>
+          <div id="rtl-hersteller-wrap" style="display:none;">
+            <label class="fld">Hersteller / Typ</label>
+            <input type="text" id="rtl-hersteller" placeholder="z. B. Möhlenhoff, Oventrop …" style="width:100%; height:38px; padding:0 11px; font-size:14px; font-family:var(--font); color:var(--text); background:var(--card); border:1px solid var(--border-strong); border-radius:var(--radius); outline:none;">
+          </div>
+        </div>
+        <div class="uwert-hint" id="rtl-hint" style="margin-top:8px; display:none;">RTL-Boxen begrenzen den Rücklauf einzelner Flächen (oft Bad-FBH im Heizkörpernetz). Im Wärmepumpenbetrieb können sie zu hohen Rücklauftemperaturen bzw. Taktung führen — vor Ort prüfen, ob sie entfallen oder umgebaut werden müssen.</div>
       </div>
     </div>
 
@@ -927,6 +956,8 @@
   var waermequelle = "luft";      // luft | sole
   var aeroblockAktiv = false;     // true, wenn Nutzer die Aeroblock-Alternative bewusst gewählt hat
   var heizflaeche = null;   // null = noch keine Auswahl
+  var hkSystem = "zweirohr";      // zweirohr | einrohr
+  var rtl = "nein";               // ja | nein — RTL-Boxen vorhanden
   var vlManuell = false;    // true, sobald der Nutzer die VL selbst ändert
 
   // Heizkreisverteiler-Listen (je Etage/Bereich ein Verteiler)
@@ -1343,6 +1374,37 @@
     if(heizflaeche === "beides"){ vlVorschlagAnwenden(); calc(); arbeitsstandSichern(); }
   });
 
+  // Rohrsystem Ein-/Zweirohr
+  function hkSystemAnwenden(){
+    document.querySelectorAll("#hk-system button").forEach(function(x){ x.classList.toggle("active", x.getAttribute("data-hksys")===hkSystem); });
+    el("hk-system-hint").textContent = hkSystem === "einrohr"
+      ? "Einrohrsystem: Die Vorlauftemperatur fällt über den Strang ab — die hinteren Heizkörper bekommen weniger. Für Wärmepumpen kritisch; Umbau auf Zweirohr oder Strangoptimierung vor Ort prüfen."
+      : "Zweirohrsystem: Jeder Heizkörper wird mit gleicher Vorlauftemperatur versorgt — gut für den Wärmepumpenbetrieb geeignet.";
+  }
+  document.querySelectorAll("#hk-system button").forEach(function(b){
+    b.addEventListener("click", function(){
+      hkSystem = b.getAttribute("data-hksys");
+      hkSystemAnwenden();
+      calc(); arbeitsstandSichern();
+    });
+  });
+
+  // RTL-Boxen
+  function rtlAnwenden(){
+    document.querySelectorAll("#rtl button").forEach(function(x){ x.classList.toggle("active", x.getAttribute("data-rtl")===rtl); });
+    var an = rtl === "ja";
+    el("rtl-anzahl-wrap").style.display = an ? "block" : "none";
+    el("rtl-hersteller-wrap").style.display = an ? "block" : "none";
+    el("rtl-hint").style.display = an ? "block" : "none";
+  }
+  document.querySelectorAll("#rtl button").forEach(function(b){
+    b.addEventListener("click", function(){
+      rtl = b.getAttribute("data-rtl");
+      rtlAnwenden();
+      calc(); arbeitsstandSichern();
+    });
+  });
+
   // Merken, wenn der Nutzer die Vorlauftemperatur selbst ändert
   el("vl").addEventListener("change", function(){
     vlManuell = true;
@@ -1685,6 +1747,7 @@
       b += zeile("Heizflächen", hfName);
       if(heizflaeche === "hk"){
         b += zeile("Anzahl Heizkörper", (el("hf-hk-anzahl").value||"–")+" Stück");
+        b += zeile("Rohrsystem", hkSystem === "einrohr" ? "Einrohrsystem" : "Zweirohrsystem");
       } else if(heizflaeche === "fbh"){
         var gesamtF = verteilerKreiseGesamt(fbhVerteiler);
         b += zeile("Heizkreisverteiler", fbhVerteiler.length + " (gesamt " + gesamtF + " Kreise)");
@@ -1692,10 +1755,16 @@
       } else {
         var gesamtB = verteilerKreiseGesamt(beidesVerteiler);
         b += zeile("Heizkörper (Pumpengruppe 1)", (el("hf-beides-hk").value||"–")+" Stück");
+        b += zeile("Rohrsystem Heizkörper", hkSystem === "einrohr" ? "Einrohrsystem" : "Zweirohrsystem");
         b += zeile("FBH-Verteiler (Pumpengruppe 2)", beidesVerteiler.length + " (gesamt " + gesamtB + " Kreise)");
         beidesVerteiler.forEach(function(v){ b += zeile("&nbsp;&nbsp;· "+(v.name||"Verteiler"), (v.kreise||0)+" Kreise"); });
         b += zeile("Vorlauf HK / FBH", (el("hf-beides-vlhk").value||"–")+" °C / "+(el("hf-beides-vlfbh").value||"–")+" °C");
       }
+    }
+    if(rtl === "ja" && (heizflaeche === "hk" || heizflaeche === "beides")){
+      var rtlAnz = el("rtl-anzahl").value||"–";
+      var rtlHst = (el("rtl-hersteller").value||"").trim();
+      b += zeile("RTL-Boxen", rtlAnz + " Stück" + (rtlHst ? " ("+rtlHst+")" : ""));
     }
     b += zeile("Ziel-Vorlauftemperatur", d.vl+" °C");
     if(altVlBekannt === "ja"){
@@ -1800,13 +1869,13 @@
   // ---- Kundenliste (lokal gespeichert, überlebt Schließen/Neuöffnen) ----
   var STORAGE_KEY = "lutzspring_evoblock_kunden_v2";
   var WORK_KEY = "lutzspring_evoblock_work_v2";
-  var alleInputs = ["flaeche","flaeche-num","wohneinheiten","wohneinheiten-num","personen","personen-num","ap","norm-at","vl","streng","pauschale","oel-verbrauch","oel-eta","gas-verbrauch","gas-eta","wp-strom","wp-jaz","d-baujahr","d-fenster","d-wand-mat","d-wand-dicke","d-wand-daemm","d-dach","u-wand-a","u-wand-u","u-dach-a","u-dach-u","u-fen-a","u-fen-u","u-bod-a","u-bod-u","hf-hk-anzahl","hf-beides-hk","hf-beides-vlhk","hf-beides-vlfbh","alt-vl-wert","alt-vl-komfort","bes-bestand","bes-heizflaechen","bes-gebaeude","bes-auslegung","sp-was","sp-wes","sp-wms"];
+  var alleInputs = ["flaeche","flaeche-num","wohneinheiten","wohneinheiten-num","personen","personen-num","ap","norm-at","vl","streng","pauschale","oel-verbrauch","oel-eta","gas-verbrauch","gas-eta","wp-strom","wp-jaz","d-baujahr","d-fenster","d-wand-mat","d-wand-dicke","d-wand-daemm","d-dach","u-wand-a","u-wand-u","u-dach-a","u-dach-u","u-fen-a","u-fen-u","u-bod-a","u-bod-u","hf-hk-anzahl","rtl-anzahl","rtl-hersteller","hf-beides-hk","hf-beides-vlhk","hf-beides-vlfbh","alt-vl-wert","alt-vl-komfort","bes-bestand","bes-heizflaechen","bes-gebaeude","bes-auslegung","sp-was","sp-wes","sp-wms"];
 
   var kunden = [];        // [{id, name, stand}]
   var aktuelleId = null;  // id des geladenen Kunden, null = ungespeicherter Arbeitsstand
 
   function standErfassen(){
-    var stand = { heizart: heizart, gebMode: gebMode, gasEinheit: gasEinheit, altVlBekannt: altVlBekannt, abwasser: abwasser, zirkulation: zirkulation, solar: solar, solarDemontage: solarDemontage, pv: pv, speicherKonzept: speicherKonzept, wpAufgabe: wpAufgabe, waermequelle: waermequelle, aeroblockAktiv: aeroblockAktiv, heizflaeche: heizflaeche, vlManuell: vlManuell, fbhVerteiler: fbhVerteiler, beidesVerteiler: beidesVerteiler, felder: {} };
+    var stand = { heizart: heizart, gebMode: gebMode, gasEinheit: gasEinheit, altVlBekannt: altVlBekannt, abwasser: abwasser, zirkulation: zirkulation, solar: solar, solarDemontage: solarDemontage, pv: pv, speicherKonzept: speicherKonzept, wpAufgabe: wpAufgabe, waermequelle: waermequelle, aeroblockAktiv: aeroblockAktiv, heizflaeche: heizflaeche, hkSystem: hkSystem, rtl: rtl, vlManuell: vlManuell, fbhVerteiler: fbhVerteiler, beidesVerteiler: beidesVerteiler, felder: {} };
     alleInputs.forEach(function(id){
       var e = el(id);
       if(!e) return;
@@ -1834,6 +1903,10 @@
       el("gas-brennwert-hint").style.display = gasEinheit === "m3" ? "block" : "none";
     }
     vlManuell = !!stand.vlManuell;
+    hkSystem = stand.hkSystem || "zweirohr";
+    hkSystemAnwenden();
+    rtl = stand.rtl || "nein";
+    rtlAnwenden();
     wpAufgabe = stand.wpAufgabe || "heizung_ww";
     wpAufgabeAnwenden();
     waermequelle = stand.waermequelle || "luft";
@@ -2070,6 +2143,8 @@
 
   // Speicheranzeige initial setzen
   speicherAnwenden();
+  hkSystemAnwenden();
+  rtlAnwenden();
 
   // Namensfeld aktualisiert die Druck-Zusammenfassung sofort
   el("kunde-name").addEventListener("input", function(){ calc(); });
