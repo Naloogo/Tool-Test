@@ -543,6 +543,24 @@
       <div class="uwert-hint" style="margin-top:12px;">Die Wärmepumpe wird auf den höheren Vorlauf (Pumpengruppe 1, Heizkörper) ausgelegt — dieser Wert wird oben als Ziel-Vorlauftemperatur übernommen. Für maximale Effizienz die Heizkörper möglichst groß für niedrige Vorlauftemperaturen auslegen. Bei mehreren Etagen je Etage einen FBH-Verteiler ergänzen.</div>
     </div>
 
+    <div id="kuehlen-wrap" style="display:none; border-top:1px solid var(--border); margin-top:16px; padding-top:16px;">
+      <div class="grid-in">
+        <div>
+          <label class="fld">Kühlfunktion gewünscht?</label>
+          <div class="segment" id="kuehlen">
+            <button type="button" data-kuehl="nein" class="active">Nein</button>
+            <button type="button" data-kuehl="ja">Ja, aktive Kühlung</button>
+          </div>
+          <div class="uwert-hint">Die Wärmepumpe ist reversibel und kann über die Flächenheizung kühlen. Erfordert Zusatzkomponenten (Taupunktüberwachung, diffusionsdichte Dämmung).</div>
+        </div>
+        <div id="kuehlen-regler-wrap" style="display:none;">
+          <label class="fld">Anzahl Räume mit Kühlung <span style="color:var(--text-3); font-weight:400;">(Raumregler)</span></label>
+          <div class="row"><input type="number" id="kuehlen-raeume" value="1" min="1" max="40" step="1" style="flex:1;"><span class="unit">Räume</span></div>
+        </div>
+      </div>
+      <div class="uwert-hint" id="kuehlen-hint" style="margin-top:8px; display:none;">Für aktive Kühlung werden Blossom-IC Raumregler eingesetzt (ermöglichen zugleich den automatischen hydraulischen Abgleich). Zusätzlich diffusionsdichte Isolierung der kälteführenden Leitungen und Taupunktfühler zur Kondensatvermeidung erforderlich.</div>
+    </div>
+
     <div class="bes-wrap">
       <label class="fld">Besonderheiten / offene Punkte zu den Heizflächen</label>
       <textarea id="bes-heizflaechen" placeholder="z. B. Bad-Heizkörper zu klein, Wintergarten schlecht beheizbar, FBH-Verteiler nicht zugänglich, einzelne Heizkörper mit Einrohrsystem, Thermostatventile defekt …"></textarea>
@@ -958,6 +976,7 @@
   var heizflaeche = null;   // null = noch keine Auswahl
   var hkSystem = "zweirohr";      // zweirohr | einrohr
   var rtl = "nein";               // ja | nein — RTL-Boxen vorhanden
+  var kuehlen = "nein";           // ja | nein — aktive Kühlung über Flächenheizung
   var vlManuell = false;    // true, sobald der Nutzer die VL selbst ändert
 
   // Heizkreisverteiler-Listen (je Etage/Bereich ein Verteiler)
@@ -1227,13 +1246,25 @@
       }
     }
 
+    // --- Kühlung ---
+    if((heizflaeche === "fbh" || heizflaeche === "beides") && kuehlen === "ja"){
+      var kuehlRaeume = parseInt(el("kuehlen-raeume").value)||1;
+      k.push({art:"pflicht", name:"Taupunktfühler / Kondensatüberwachung",
+        desc:"Verhindert Kondensatbildung im Kühlbetrieb — schaltet die Kühlung ab, bevor der Taupunkt unterschritten wird. Pflicht bei aktiver Flächenkühlung."});
+      k.push({art:"pflicht", name:"Diffusionsdichte Dämmung der kälteführenden Leitungen",
+        desc:"Alle Vor- und Rücklaufleitungen im Kühlbetrieb müssen diffusionsdicht gedämmt werden, um Tauwasser und Bauschäden zu vermeiden."});
+      k.push({art:"pflicht", name:"Blossom-IC Raumregler ("+kuehlRaeume+" "+(kuehlRaeume===1?"Raum":"Räume")+")",
+        desc:"Raumregler für den Kühlbetrieb — übernehmen zugleich den automatischen hydraulischen Abgleich der Flächenheizkreise. Je gekühltem Raum ein Regler."});
+      k.push({art:"pflicht", name:"Umschaltung Heizen/Kühlen + Kühlstation",
+        desc:"Umschaltventile und Regelungserweiterung für den reversiblen Betrieb. Bei Sole/Wasser passive Kühlung über Wärmetauscher möglich."});
+    } else if(heizflaeche === "fbh" || heizflaeche === "beides"){
+      k.push({art:"option", name:"Kühlfunktion über Flächenheizung (optional)",
+        desc:"Die Wärmepumpe ist reversibel. Bei späterem Wunsch nach Kühlung sind Taupunktfühler, diffusionsdichte Dämmung und geeignete Raumregler nachzurüsten."});
+    }
+
     // --- Objektabhängige Prüfpunkte ---
     k.push({art:"option", name:"Schallgutachten / Schallschutzmaßnahmen",
       desc:"Bei enger Bebauung: "+ (gewaehlt.db||46) +" dB(A) Schallleistung, Abstand zu schutzbedürftigen Räumen mit dem Weishaupt-Schallrechner prüfen."});
-    if(heizflaeche === "fbh" || heizflaeche === "beides"){
-      k.push({art:"option", name:"Kühlfunktion über Fußbodenheizung",
-        desc:"Evoblock ist reversibel — Taupunktwächter und geeignete Regelung erforderlich."});
-    }
 
     return k;
   }
@@ -1364,6 +1395,8 @@
       c.classList.add("active");
       ["hk","fbh","beides"].forEach(function(h){ el("panel-"+h).classList.toggle("show", h===heizflaeche); });
       vlVorschlagAnwenden();
+      kuehlenSichtbarkeit();
+      kuehlenAnwenden();
       calc();
       arbeitsstandSichern();
     });
@@ -1401,6 +1434,26 @@
     b.addEventListener("click", function(){
       rtl = b.getAttribute("data-rtl");
       rtlAnwenden();
+      calc(); arbeitsstandSichern();
+    });
+  });
+
+  // Kühlfunktion (nur bei Flächenheizung: fbh oder beides)
+  function kuehlenSichtbarkeit(){
+    var moeglich = (heizflaeche === "fbh" || heizflaeche === "beides");
+    el("kuehlen-wrap").style.display = moeglich ? "block" : "none";
+    if(!moeglich) kuehlen = "nein";
+  }
+  function kuehlenAnwenden(){
+    document.querySelectorAll("#kuehlen button").forEach(function(x){ x.classList.toggle("active", x.getAttribute("data-kuehl")===kuehlen); });
+    var an = (kuehlen === "ja");
+    el("kuehlen-regler-wrap").style.display = an ? "block" : "none";
+    el("kuehlen-hint").style.display = an ? "block" : "none";
+  }
+  document.querySelectorAll("#kuehlen button").forEach(function(b){
+    b.addEventListener("click", function(){
+      kuehlen = b.getAttribute("data-kuehl");
+      kuehlenAnwenden();
       calc(); arbeitsstandSichern();
     });
   });
@@ -1766,6 +1819,9 @@
       var rtlHst = (el("rtl-hersteller").value||"").trim();
       b += zeile("RTL-Boxen", rtlAnz + " Stück" + (rtlHst ? " ("+rtlHst+")" : ""));
     }
+    if((heizflaeche === "fbh" || heizflaeche === "beides") && kuehlen === "ja"){
+      b += zeile("Kühlfunktion", "aktive Kühlung — " + (el("kuehlen-raeume").value||"–") + " Räume (Blossom-IC)");
+    }
     b += zeile("Ziel-Vorlauftemperatur", d.vl+" °C");
     if(altVlBekannt === "ja"){
       var aVl = el("alt-vl-wert").value||"–";
@@ -1869,13 +1925,13 @@
   // ---- Kundenliste (lokal gespeichert, überlebt Schließen/Neuöffnen) ----
   var STORAGE_KEY = "lutzspring_evoblock_kunden_v2";
   var WORK_KEY = "lutzspring_evoblock_work_v2";
-  var alleInputs = ["flaeche","flaeche-num","wohneinheiten","wohneinheiten-num","personen","personen-num","ap","norm-at","vl","streng","pauschale","oel-verbrauch","oel-eta","gas-verbrauch","gas-eta","wp-strom","wp-jaz","d-baujahr","d-fenster","d-wand-mat","d-wand-dicke","d-wand-daemm","d-dach","u-wand-a","u-wand-u","u-dach-a","u-dach-u","u-fen-a","u-fen-u","u-bod-a","u-bod-u","hf-hk-anzahl","rtl-anzahl","rtl-hersteller","hf-beides-hk","hf-beides-vlhk","hf-beides-vlfbh","alt-vl-wert","alt-vl-komfort","bes-bestand","bes-heizflaechen","bes-gebaeude","bes-auslegung","sp-was","sp-wes","sp-wms"];
+  var alleInputs = ["flaeche","flaeche-num","wohneinheiten","wohneinheiten-num","personen","personen-num","ap","norm-at","vl","streng","pauschale","oel-verbrauch","oel-eta","gas-verbrauch","gas-eta","wp-strom","wp-jaz","d-baujahr","d-fenster","d-wand-mat","d-wand-dicke","d-wand-daemm","d-dach","u-wand-a","u-wand-u","u-dach-a","u-dach-u","u-fen-a","u-fen-u","u-bod-a","u-bod-u","hf-hk-anzahl","rtl-anzahl","rtl-hersteller","kuehlen-raeume","hf-beides-hk","hf-beides-vlhk","hf-beides-vlfbh","alt-vl-wert","alt-vl-komfort","bes-bestand","bes-heizflaechen","bes-gebaeude","bes-auslegung","sp-was","sp-wes","sp-wms"];
 
   var kunden = [];        // [{id, name, stand}]
   var aktuelleId = null;  // id des geladenen Kunden, null = ungespeicherter Arbeitsstand
 
   function standErfassen(){
-    var stand = { heizart: heizart, gebMode: gebMode, gasEinheit: gasEinheit, altVlBekannt: altVlBekannt, abwasser: abwasser, zirkulation: zirkulation, solar: solar, solarDemontage: solarDemontage, pv: pv, speicherKonzept: speicherKonzept, wpAufgabe: wpAufgabe, waermequelle: waermequelle, aeroblockAktiv: aeroblockAktiv, heizflaeche: heizflaeche, hkSystem: hkSystem, rtl: rtl, vlManuell: vlManuell, fbhVerteiler: fbhVerteiler, beidesVerteiler: beidesVerteiler, felder: {} };
+    var stand = { heizart: heizart, gebMode: gebMode, gasEinheit: gasEinheit, altVlBekannt: altVlBekannt, abwasser: abwasser, zirkulation: zirkulation, solar: solar, solarDemontage: solarDemontage, pv: pv, speicherKonzept: speicherKonzept, wpAufgabe: wpAufgabe, waermequelle: waermequelle, aeroblockAktiv: aeroblockAktiv, heizflaeche: heizflaeche, hkSystem: hkSystem, rtl: rtl, kuehlen: kuehlen, vlManuell: vlManuell, fbhVerteiler: fbhVerteiler, beidesVerteiler: beidesVerteiler, felder: {} };
     alleInputs.forEach(function(id){
       var e = el(id);
       if(!e) return;
@@ -1907,6 +1963,9 @@
     hkSystemAnwenden();
     rtl = stand.rtl || "nein";
     rtlAnwenden();
+    kuehlen = stand.kuehlen || "nein";
+    kuehlenSichtbarkeit();
+    kuehlenAnwenden();
     wpAufgabe = stand.wpAufgabe || "heizung_ww";
     wpAufgabeAnwenden();
     waermequelle = stand.waermequelle || "luft";
