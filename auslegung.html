@@ -4,17 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Auslegungstool Wärmepumpe · Lutz Spring GmbH</title>
+<link rel="stylesheet" href="theme.css">
 <style>
+  /* Datei-eigene Namen -> zentrale Tokens aus theme.css.
+     Farbwerte stehen ausschliesslich in theme.css. */
   :root{
-    --bg:#f4f3ee; --card:#ffffff; --surface:#faf9f5;
-    --text:#23231f; --text-2:#5f5e57; --text-3:#8a897f;
-    --border:#e2e0d6; --border-strong:#cfcdbf;
-    --accent:#1a2b4a; --accent-bg:#e6ebf3; --accent-text:#1a2b4a;
-    --warn:#854f0b; --warn-bg:#faeeda;
-    --danger:#a32d2d; --danger-bg:#fcebeb;
-    --success:#3b6d11; --success-bg:#eaf3de;
-    --radius:8px;
-    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --accent:      var(--brand-navy);
+    --accent-text: var(--brand-navy);
   }
   *{box-sizing:border-box;}
   body{
@@ -27,7 +23,7 @@
   header{
     display:flex; align-items:flex-start; justify-content:space-between;
     padding:26px 30px; margin:20px 0 28px;
-    background:#1a2b4a; border-radius:14px; flex-wrap:wrap; gap:16px;
+    background:var(--brand-navy); border-radius:14px; flex-wrap:wrap; gap:16px;
     box-shadow:0 1px 3px rgba(0,0,0,0.08);
   }
   .brand{display:inline-flex; flex-direction:column; align-items:center; gap:8px;}
@@ -40,7 +36,7 @@
   .zurueck:hover{opacity:1;}
   .zurueck:active{opacity:.3;}
   .brand img.logo-img{width:240px; height:auto; display:block;}
-  .brand-sub{color:#f5e400; font-size:13px; font-weight:600; letter-spacing:1.2px; text-align:center; white-space:nowrap;}
+  .brand-sub{color:var(--brand-yellow); font-size:13px; font-weight:600; letter-spacing:1.2px; text-align:center; white-space:nowrap;}
   .tool-title{font-size:13px; color:#a8b4c8; text-align:right; line-height:1.5;}
   .tool-title strong{display:block; color:#fff; font-size:15px; font-weight:600;}
   .hinweis{
@@ -128,13 +124,13 @@
   }
   .mini-btn:hover{background:var(--surface);}
   .mini-btn.accent{background:var(--accent); color:#fff; border-color:var(--accent);}
-  .mini-btn.accent:hover{background:#12203a;}
+  .mini-btn.accent:hover{background:var(--brand-navy-dark);}
   .uwert-hint{font-size:11px; color:var(--text-3); margin-top:4px;}
   .verteiler-row{display:flex; align-items:center; gap:10px; margin-bottom:10px;}
   .verteiler-row .vt-name{flex:1.4; height:38px; padding:0 11px; font-size:14px; font-family:var(--font); color:var(--text); background:var(--card); border:1px solid var(--border-strong); border-radius:var(--radius); outline:none;}
   .verteiler-row .vt-kreise{flex:0.8; height:38px; padding:0 11px; font-size:14px; font-family:var(--font); color:var(--text); background:var(--card); border:1px solid var(--border-strong); border-radius:var(--radius); outline:none;}
   .verteiler-row .vt-del{width:34px; height:34px; flex-shrink:0; border:1px solid var(--border-strong); border-radius:var(--radius); background:var(--card); color:var(--text-2); font-size:18px; line-height:1; cursor:pointer;}
-  .verteiler-row .vt-del:hover{background:var(--bg-danger); color:var(--danger); border-color:var(--danger);}
+  .verteiler-row .vt-del:hover{background:var(--danger-bg); color:var(--danger); border-color:var(--danger);}
   .vt-add{height:38px; padding:0 16px; font-size:13px; font-family:var(--font); color:var(--accent); background:var(--accent-bg); border:1px solid var(--accent); border-radius:var(--radius); cursor:pointer; font-weight:500;}
   .vt-add:hover{background:#d5dfec;}
   .pg-box{border:1.5px solid var(--border-strong); border-radius:10px; padding:14px 16px; margin-top:14px;}
@@ -159,7 +155,7 @@
   .komp-legende{font-size:11px; color:var(--text-3); margin-top:12px; display:flex; gap:16px; flex-wrap:wrap;}
   .komp-legende span{display:inline-flex; align-items:center; gap:5px;}
   .komp-legende i{width:10px; height:10px; border-radius:50%; display:inline-block;}
-  .alt-card{margin-top:14px; padding:14px 16px; border:1px dashed var(--border-strong); border-radius:10px; background:#f4f3ee; opacity:.62; transition:opacity .15s;}
+  .alt-card{margin-top:14px; padding:14px 16px; border:1px dashed var(--border-strong); border-radius:10px; background:var(--bg); opacity:.62; transition:opacity .15s;}
   .alt-card:hover{opacity:.85;}
   .alt-card.aktiv{opacity:1; border-style:solid; border-color:#c98a2b; background:#fdf8f0;}
   .alt-head{font-size:14px; font-weight:700; color:var(--text); margin-bottom:6px;}

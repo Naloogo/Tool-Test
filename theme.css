@@ -1,0 +1,89 @@
+/* ============================================================
+   theme.css — zentrale Design-Tokens der Lutz-Spring-Tools
+   ------------------------------------------------------------
+   EINZIGE QUELLE FÜR FARBEN, ABSTÄNDE UND SCHRIFT.
+   Für ein Redesign ausschließlich diese Datei anfassen —
+   die einzelnen Tool-Dateien greifen nur noch hierauf zu.
+
+   Aufbau:
+     1. Marke        – Corporate-Farben, nicht ohne Rücksprache ändern
+     2. Flächen      – Hintergründe und Kartenflächen
+     3. Text         – Textfarben nach Wichtigkeit
+     4. Linien       – Rahmen und Trenner
+     5. Interaktion  – Links, Buttons, Fokus
+     6. Status       – Erfolg / Warnung / Fehler / Info
+     7. Form         – Radien, Schrift, Abstände
+   ============================================================ */
+
+:root{
+
+  /* --- 1. Marke ------------------------------------------- */
+  --brand-navy:        #1a2b4a;
+  --brand-navy-light:  #28406b;
+  --brand-navy-soft:   #2c4470;
+  --brand-navy-dark:   #12203a;
+  --brand-yellow:      #f5e400;
+  --brand-yellow-alt:  #ffed00;
+
+  /* --- 2. Flächen ----------------------------------------- */
+  /* Warme Variante: Landingpage, Auslegung, Kostenvergleich */
+  --bg:            #f4f3ee;
+  --card:          #ffffff;
+  --surface:       #faf9f5;
+
+  /* Kühle Variante: Heizkörper, Bestandsaufnahme.
+     REDESIGN-HINWEIS: Die beiden Flächenfamilien sind historisch
+     gewachsen. Um alles auf einen Ton zu vereinheitlichen, hier
+     einfach --bg-cool auf var(--bg) setzen. */
+  --bg-cool:       #f4f6f9;
+  --surface-cool:  #eef1f5;
+
+  /* --- 3. Text -------------------------------------------- */
+  --text:          #23231f;   /* Fließtext */
+  --text-2:        #5f5e57;   /* Sekundär, Labels */
+  --text-3:        #8a897f;   /* Tertiär, Hinweise */
+  --text-on-dark:  #ffffff;   /* Text auf Navy-Flächen */
+
+  /* Kühle Variante (Heizkörper, Bestandsaufnahme) */
+  --text-cool:     #1c2733;
+  --text-cool-2:   #5f6b7a;
+
+  /* Warme Variante (Landingpage) */
+  --text-warm:     #20242c;
+  --text-warm-2:   #5d6672;
+
+  /* --- 4. Linien ------------------------------------------ */
+  --border:        #e2e0d6;
+  --border-strong: #cfcdbf;
+  --border-cool:   #d9dee6;
+
+  /* --- 5. Interaktion ------------------------------------- */
+  --interactive:        #3d7ab8;  /* Links, aktive Elemente */
+  --interactive-strong: #2c6cb8;  /* Buttons, Hervorhebung */
+  --interactive-dark:   #194a82;  /* Hover / gedrückt */
+  --interactive-bg:     #e8f0fb;  /* Hinterlegte Info-Flächen */
+  --accent-bg:          #e6ebf3;  /* Navy-Hinterlegung */
+
+  /* --- 6. Status ------------------------------------------ */
+  --success:       #3b6d11;
+  --success-bg:    #eaf3de;
+  --status-green:  #2e7d4f;
+  --status-green-bg: #e6f4ea;
+
+  --warn:          #854f0b;
+  --warn-bg:       #faeeda;
+  --status-amber:  #c77d1a;
+  --status-amber-bg: #fff7e6;
+
+  --danger:        #a32d2d;
+  --danger-bg:     #fcebeb;
+  --status-red:    #b23b3b;
+  --status-red-bg: #f4dede;
+
+
+  /* --- 7. Form -------------------------------------------- */
+  --radius:      8px;
+  --radius-lg:   16px;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+}

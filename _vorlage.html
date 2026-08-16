@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<!-- ============================================================
+     VORLAGE FÜR EIN NEUES TOOL
+     ------------------------------------------------------------
+     So benutzt du diese Datei:
+       1. Kopieren und sinnvoll benennen, z. B. "hydraulik.html"
+          (Kleinschreibung, keine Umlaute, keine Leerzeichen)
+       2. <title> und den Kopfbereich anpassen
+       3. Eingabefelder und Rechenlogik ausfüllen
+          (die mit TODO markierten Stellen)
+       4. Kachel in index.html ergänzen — Muster steht ganz unten
+       5. Zeile in der Tabelle in CLAUDE.md ergänzen
+
+     Wichtig: Farben NICHT hier hart eintragen, sondern
+     ausschließlich Tokens aus theme.css verwenden — sonst
+     greift das nächste Redesign an dieser Datei vorbei.
+     ============================================================ -->
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lutz Spring GmbH &ndash; Neues Tool</title>
+
+<!-- iOS-Homescreen-Betrieb: bitte unverändert lassen -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lutz Spring">
+<meta name="theme-color" content="#1a2b4a">
+<link rel="apple-touch-icon" href="logo.png">
+<link rel="icon" href="logo.png">
+
+<!-- Zentrale Design-Tokens. Muss VOR dem <style>-Block stehen. -->
+<link rel="stylesheet" href="theme.css">
+
+<style>
+  /* Datei-eigene Namen -> zentrale Tokens aus theme.css. */
+  :root{
+    --accent:      var(--brand-navy);
+    --accent-text: var(--brand-navy);
+  }
+
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font);
+    line-height:1.5;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right)
+            env(safe-area-inset-bottom) env(safe-area-inset-left);
+    -webkit-tap-highlight-color:transparent;
+  }
+  .wrap{width:100%; max-width:1000px; margin:0 auto; padding:20px 20px 60px;}
+
+  /* --- Kopfbereich --- */
+  header{
+    background:var(--accent);
+    color:var(--text-on-dark);
+    border-radius:var(--radius-lg);
+    padding:22px 24px;
+    margin-bottom:18px;
+    display:flex; flex-wrap:wrap; gap:14px;
+    align-items:center; justify-content:space-between;
+  }
+  .logo-img{height:38px; width:auto; display:block;}
+  .brand-sub{font-size:12px; opacity:.75; margin-top:6px;}
+  .tool-title{text-align:right; font-size:14px; opacity:.9;}
+  .tool-title strong{display:block; font-size:19px; opacity:1; margin-bottom:2px;}
+
+  /* --- Hinweisbanner --- */
+  .hinweis{
+    background:var(--status-amber-bg);
+    border:1px solid var(--status-amber);
+    color:var(--warn);
+    border-radius:var(--radius);
+    padding:12px 14px;
+    font-size:13px;
+    margin-bottom:18px;
+  }
+
+  /* --- Inhaltsblock --- */
+  .block{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:18px 20px;
+    margin-bottom:16px;
+  }
+  .block-title{
+    font-weight:600; font-size:16px;
+    color:var(--accent-text);
+    margin-bottom:14px;
+    display:flex; align-items:center; gap:8px;
+  }
+
+  /* --- Formularfelder --- */
+  .fld{display:block; margin-bottom:14px; font-size:14px;}
+  .fld > span{display:block; color:var(--text-2); margin-bottom:5px;}
+  input, select, textarea{
+    width:100%; padding:9px 11px;
+    border:1px solid var(--border-strong);
+    border-radius:var(--radius);
+    background:var(--surface);
+    color:var(--text);
+    font-family:var(--font); font-size:15px;
+  }
+  input:focus, select:focus, textarea:focus{
+    outline:2px solid var(--interactive);
+    outline-offset:1px;
+    border-color:var(--interactive);
+  }
+  .raster{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:0 16px;}
+
+  /* --- Schaltflächen --- */
+  button{
+    font-family:var(--font); font-size:15px; font-weight:600;
+    padding:11px 20px;
+    border:1px solid var(--accent);
+    border-radius:var(--radius);
+    background:var(--accent);
+    color:var(--text-on-dark);
+    cursor:pointer;
+  }
+  button:hover{background:var(--brand-navy-light); border-color:var(--brand-navy-light);}
+  .mini-btn{
+    font-size:13px; font-weight:500; padding:6px 12px;
+    background:var(--card); color:var(--accent-text);
+    border-color:var(--border-strong);
+  }
+  .mini-btn:hover{background:var(--accent-bg); border-color:var(--accent);}
+
+  /* --- Ergebnisbereich --- */
+  .ergebnis{
+    background:var(--accent-bg);
+    border:1px solid var(--accent);
+    border-radius:var(--radius);
+    padding:16px 18px;
+    margin-top:6px;
+  }
+  .ergebnis-zeile{
+    display:flex; justify-content:space-between; gap:12px;
+    padding:7px 0; border-bottom:1px solid var(--border);
+    font-size:14px;
+  }
+  .ergebnis-zeile:last-child{border-bottom:0;}
+  .ergebnis-zeile b{color:var(--accent-text);}
+  .leise{color:var(--text-3); font-size:12px;}
+
+  /* --- Fußzeile mit Rücksprung --- */
+  footer{margin-top:26px; text-align:center; font-size:13px;}
+  footer a{color:var(--interactive); text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+
+  @media (max-width:560px){
+    header{flex-direction:column; align-items:flex-start;}
+    .tool-title{text-align:left;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <img class="logo-img" src="logo.png" alt="Lutz Spring GmbH">
+      <div class="brand-sub">Sanitär &middot; Heizung &middot; Klimatechnik</div>
+    </div>
+    <div class="tool-title">
+      <!-- TODO: Name des Tools -->
+      <strong>Name des Tools</strong>
+      Kurzbeschreibung in einer Zeile
+    </div>
+  </header>
+
+  <!-- TODO: Haftungshinweis anpassen oder Block entfernen -->
+  <div class="hinweis">
+    &#9888; Überschlägige Ersteinschätzung für die Angebotserstellung.
+    Die verbindliche Auslegung erfolgt nach der einschlägigen Norm.
+  </div>
+
+  <div class="block">
+    <div class="block-title">Eingaben</div>
+    <div class="raster">
+      <!-- TODO: eigene Eingabefelder -->
+      <label class="fld">
+        <span>Beispielwert A</span>
+        <input type="number" id="wert-a" value="0" step="0.1" inputmode="decimal">
+      </label>
+      <label class="fld">
+        <span>Beispielwert B</span>
+        <input type="number" id="wert-b" value="0" step="0.1" inputmode="decimal">
+      </label>
+      <label class="fld">
+        <span>Auswahl</span>
+        <select id="modus">
+          <option value="1">Variante 1</option>
+          <option value="2">Variante 2</option>
+        </select>
+      </label>
+    </div>
+    <button id="btn-rechnen">Berechnen</button>
+  </div>
+
+  <div class="block">
+    <div class="block-title">Ergebnis</div>
+    <div class="ergebnis" id="ergebnis">
+      <div class="leise">Werte eingeben und auf &bdquo;Berechnen&ldquo; tippen.</div>
+    </div>
+  </div>
+
+  <footer>
+    <a href="index.html">&larr; Zurück zur Übersicht</a>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var $ = function(id){ return document.getElementById(id); };
+  var num = function(id){ var v = parseFloat($(id).value); return isNaN(v) ? 0 : v; };
+
+  // TODO: Hier die eigentliche Fachlogik einsetzen.
+  // Rechenformeln bitte mit Quelle kommentieren (Norm, Handbuch, Seite),
+  // damit sie später nachvollziehbar und prüfbar bleiben.
+  function berechnen(){
+    var a     = num('wert-a');
+    var b     = num('wert-b');
+    var modus = $('modus').value;
+
+    var faktor   = (modus === '2') ? 1.15 : 1.0;
+    var ergebnis = (a + b) * faktor;
+
+    zeigeErgebnis([
+      { label: 'Summe der Eingaben', wert: (a + b).toFixed(2) },
+      { label: 'Angewendeter Faktor', wert: faktor.toFixed(2) },
+      { label: 'Ergebnis',            wert: ergebnis.toFixed(2) + ' kW' }
+    ]);
+  }
+
+  function zeigeErgebnis(zeilen){
+    $('ergebnis').innerHTML = zeilen.map(function(z){
+      return '<div class="ergebnis-zeile"><span>' + z.label +
+             '</span><b>' + z.wert + '</b></div>';
+    }).join('');
+  }
+
+  $('btn-rechnen').addEventListener('click', berechnen);
+
+  // Live-Neuberechnung, sobald schon einmal gerechnet wurde
+  ['wert-a','wert-b','modus'].forEach(function(id){
+    $(id).addEventListener('input', function(){
+      if ($('ergebnis').querySelector('.ergebnis-zeile')) berechnen();
+    });
+  });
+})();
+</script>
+
+<!-- ============================================================
+     SCHRITT 4 — Kachel in index.html ergänzen.
+     Dieses Muster zwischen die vorhandenen Kacheln setzen und
+     href, Titel und Beschreibung anpassen:
+
+       <a class="kachel" href="DATEINAME.html">
+         <div class="kachel-titel">Name des Tools</div>
+         <div class="kachel-text">Kurzbeschreibung in einer Zeile</div>
+       </a>
+
+     Die genauen Klassennamen bitte aus index.html übernehmen —
+     dort steht die maßgebliche Fassung.
+     ============================================================ -->
+</body>
+</html>

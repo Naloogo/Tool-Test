@@ -4,18 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Heizkörper-Auslegung · Lutz Spring GmbH</title>
+<link rel="stylesheet" href="theme.css">
 <style>
+  /* Datei-eigene Namen -> zentrale Tokens aus theme.css.
+     Farbwerte stehen ausschliesslich in theme.css. */
   :root{
-    --navy:#1a2b4a;
-    --navy-light:#28406b;
-    --accent:#3d7ab8;
-    --green:#2e7d4f;
-    --amber:#c77d1a;
-    --red:#b23b3b;
-    --bg:#f4f6f9;
-    --line:#d9dee6;
-    --text:#1c2733;
-    --muted:#5f6b7a;
+    --navy:       var(--brand-navy);
+    --navy-light: var(--brand-navy-light);
+    --accent:     var(--interactive);
+    --green:      var(--status-green);
+    --amber:      var(--status-amber);
+    --red:        var(--status-red);
+    --bg:         var(--bg-cool);
+    --line:       var(--border-cool);
+    --text:       var(--text-cool);
+    --muted:      var(--text-cool-2);
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.45;font-size:15px}
@@ -28,7 +31,7 @@
   .logo-img{height:46px;width:auto;display:block}
   @media(max-width:600px){.logo-img{height:38px}}
   .logo-text{margin-left:auto;text-align:right}
-  .logo-text h1{font-size:26px;font-weight:700;letter-spacing:.2px;color:#ffed00}
+  .logo-text h1{font-size:26px;font-weight:700;letter-spacing:.2px;color:var(--brand-yellow-alt)}
   .logo-text p{font-size:12px;opacity:.8;font-weight:400}
   @media(max-width:600px){.logo-text h1{font-size:20px}}
   .wrap{width:100%;max-width:1400px;margin:0 auto;padding:22px 28px 60px}
@@ -79,15 +82,15 @@
   .cov.tight{color:var(--amber)}
   .tag-best{background:var(--green);color:#fff;padding:1px 7px;border-radius:5px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-left:6px}
   .tag-bestand{background:var(--accent);color:#fff;padding:1px 7px;border-radius:5px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-left:6px}
-  .tag-lager{background:#2c6cb8;color:#fff;padding:1px 7px;border-radius:5px;font-size:10px;font-weight:700;letter-spacing:.3px;margin-left:6px;white-space:nowrap}
+  .tag-lager{background:var(--interactive-strong);color:#fff;padding:1px 7px;border-radius:5px;font-size:10px;font-weight:700;letter-spacing:.3px;margin-left:6px;white-space:nowrap}
   .lager-row{background:#eff5fc}
   .lager-row:hover{background:#e2eefa}
   .lager-status{margin:0 0 14px;padding:8px 14px;border-radius:8px;font-size:12.5px;font-weight:600}
-  .lager-status.ok{background:#e8f0fb;border:1px solid #2c6cb8;color:#194a82}
+  .lager-status.ok{background:var(--interactive-bg);border:1px solid var(--interactive-strong);color:var(--interactive-dark)}
   .lager-status.warn{background:#f4f4f0;border:1px solid var(--line);color:var(--muted)}
   .clickrow{cursor:pointer}
   .clickrow.active-row{background:#dfeaf6 !important;box-shadow:inset 3px 0 0 var(--accent)}
-  .bez-box{background:linear-gradient(135deg,#1a2b4a,#28406b);color:#fff;border-radius:10px;padding:16px 18px;margin-bottom:14px}
+  .bez-box{background:linear-gradient(135deg,var(--brand-navy),var(--brand-navy-light));color:#fff;border-radius:10px;padding:16px 18px;margin-bottom:14px}
   .bez-head{font-size:11px;text-transform:uppercase;letter-spacing:.6px;opacity:.7;margin-bottom:4px}
   .bez-modell{font-size:18px;font-weight:800;letter-spacing:.3px}
   .bez-klar{font-size:13.5px;opacity:.92;margin-top:3px}
@@ -96,7 +99,7 @@
   .bez-konsole{margin-top:10px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:7px;padding:7px 11px;font-size:12.5px;color:#fff}
   .kons-switch{display:flex;gap:6px;margin-bottom:7px}
   .kons-btn{flex:1;padding:5px 8px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);border-radius:6px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
-  .kons-btn.active{background:#f5e400;color:#3a3000;border-color:#f5e400}
+  .kons-btn.active{background:var(--brand-yellow);color:#3a3000;border-color:var(--brand-yellow)}
   .kons-inhalt{font-size:12.5px}
   .bez-lager{margin-top:10px;background:rgba(44,108,184,.30);border:1px solid rgba(120,180,255,.5);border-radius:7px;padding:7px 11px;font-size:12.5px;color:#fff}
   .bez-bestand{margin-top:10px;display:flex;align-items:flex-start;gap:8px;background:rgba(245,228,0,.15);border:1px solid rgba(245,228,0,.5);border-radius:7px;padding:8px 11px;font-size:12.5px;color:#fff;cursor:pointer}
@@ -133,7 +136,7 @@
   .btn-io{padding:10px 16px;background:var(--bg);color:var(--navy);border:1px solid var(--line);border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;white-space:nowrap;text-align:center}
   .btn-io:hover{background:#e9eef4;border-color:var(--accent)}
   @media(max-width:700px){.proj-io-btns{flex-direction:column}.proj-io-btns button,.proj-io-btns label{width:100%}}
-  .ioswarn{display:none;background:#fff7e6;border:1px solid var(--amber);border-left:4px solid var(--amber);border-radius:10px;padding:14px 18px;margin-bottom:16px;color:#7a5410;font-size:13.5px}
+  .ioswarn{display:none;background:var(--status-amber-bg);border:1px solid var(--amber);border-left:4px solid var(--amber);border-radius:10px;padding:14px 18px;margin-bottom:16px;color:#7a5410;font-size:13.5px}
   .ioswarn b{color:#5c3f0c}
   .raumliste{margin-top:14px;display:flex;flex-direction:column;gap:8px}
   .raumchip{display:flex;flex-direction:column;gap:8px;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px 13px;font-size:13px}
@@ -160,36 +163,36 @@
     .zurueck{display:none !important}
     .wrap{max-width:100%;padding:0}
     #printArea{display:block !important;font-size:12px;color:#000}
-    #printArea .ph{display:flex;justify-content:space-between;align-items:flex-start;background:#1a2b4a;color:#fff;padding:18px 22px;margin:-0px 0 16px;border-radius:8px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    #printArea .ph{display:flex;justify-content:space-between;align-items:flex-start;background:var(--brand-navy);color:#fff;padding:18px 22px;margin:-0px 0 16px;border-radius:8px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
     #printArea .plogo{height:48px;width:auto;display:block}
     #printArea h1{font-size:19px;color:#fff;margin:0}
     #printArea .ph .psub{font-size:11px;color:#e8edf4}
     #printArea .psub{font-size:11px;color:#555}
     #printArea .proom{border:1px solid #bbb;border-radius:6px;padding:10px 14px;margin-bottom:12px;page-break-inside:avoid}
-    #printArea .proom h3{font-size:14px;margin:0 0 6px;color:#1a2b4a;border-bottom:1px solid #ddd;padding-bottom:4px}
-    #printArea .petage-head{font-size:15px;font-weight:700;color:#fff;background:#1a2b4a;padding:6px 12px;border-radius:5px;margin:16px 0 10px;-webkit-print-color-adjust:exact;print-color-adjust:exact;page-break-after:avoid}
+    #printArea .proom h3{font-size:14px;margin:0 0 6px;color:var(--brand-navy);border-bottom:1px solid #ddd;padding-bottom:4px}
+    #printArea .petage-head{font-size:15px;font-weight:700;color:#fff;background:var(--brand-navy);padding:6px 12px;border-radius:5px;margin:16px 0 10px;-webkit-print-color-adjust:exact;print-color-adjust:exact;page-break-after:avoid}
     #printArea .petage-head:first-child{margin-top:0}
     #printArea .pnotiz{margin-top:8px;background:#fff6d6;border:1px solid #e3c94a;border-left:4px solid #d4a017;border-radius:5px;padding:7px 11px;font-size:12px;color:#5c4a0c;-webkit-print-color-adjust:exact;print-color-adjust:exact}
     #printArea .pnotiz-label{font-weight:700;color:#7a5c0c;text-transform:uppercase;letter-spacing:.5px;font-size:10.5px}
     #printArea .pbestand{display:inline-block;background:#fde9a8;border:1px solid #d4a017;color:#5c4a0c;font-weight:700;font-size:11px;padding:3px 10px;border-radius:5px;margin:0 0 8px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
     /* Bestell-Zusammenfassungen */
-    #printArea .psum{margin-top:18px;border:1.5px solid #1a2b4a;border-radius:7px;overflow:hidden;page-break-inside:avoid}
-    #printArea .psum-head{background:#1a2b4a;color:#fff;font-weight:700;font-size:13px;padding:7px 12px;display:flex;justify-content:space-between;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    #printArea .psum{margin-top:18px;border:1.5px solid var(--brand-navy);border-radius:7px;overflow:hidden;page-break-inside:avoid}
+    #printArea .psum-head{background:var(--brand-navy);color:#fff;font-weight:700;font-size:13px;padding:7px 12px;display:flex;justify-content:space-between;-webkit-print-color-adjust:exact;print-color-adjust:exact}
     #printArea .psum-head span{font-weight:400;font-size:11.5px;opacity:.9}
     #printArea .psum-table{width:100%;border-collapse:collapse;font-size:11.5px}
-    #printArea .psum-table th{background:#eef1f5;text-align:left;padding:5px 10px;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;color:#333;border-bottom:1px solid #ccc;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    #printArea .psum-table th{background:var(--surface-cool);text-align:left;padding:5px 10px;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;color:#333;border-bottom:1px solid #ccc;-webkit-print-color-adjust:exact;print-color-adjust:exact}
     #printArea .psum-table td{padding:5px 10px;border-bottom:1px solid #e5e5e5;vertical-align:top;width:auto}
     #printArea .psum-table td:first-child{width:auto;color:#000}
     #printArea .psum-table .c-menge{width:52px;white-space:nowrap}
     #printArea .psum-table .c-raum{color:#666;font-size:10.5px}
     #printArea .psum-bestand{border-color:#d4a017}
     #printArea .psum-bestand .psum-head{background:#d4a017;color:#3a2f08}
-    #printArea .psum-lager{border-color:#2c6cb8}
-    #printArea .psum-lager .psum-head{background:#2c6cb8;color:#fff}
-    #printArea .phk-lager{display:inline-block;background:#2c6cb8;color:#fff;font-size:10px;font-weight:700;padding:1px 8px;border-radius:5px;margin-left:6px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-    #printArea .phk-bestand{display:inline-block;background:#f5e400;color:#3a3000;font-size:10px;font-weight:700;padding:1px 8px;border-radius:5px;margin-left:6px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-    #printArea .phk-lager-box{border-left:3px solid #2c6cb8}
-    #printArea .phk-bestand-box{border-left:3px solid #f5e400;background:#fffdf0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    #printArea .psum-lager{border-color:var(--interactive-strong)}
+    #printArea .psum-lager .psum-head{background:var(--interactive-strong);color:#fff}
+    #printArea .phk-lager{display:inline-block;background:var(--interactive-strong);color:#fff;font-size:10px;font-weight:700;padding:1px 8px;border-radius:5px;margin-left:6px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    #printArea .phk-bestand{display:inline-block;background:var(--brand-yellow);color:#3a3000;font-size:10px;font-weight:700;padding:1px 8px;border-radius:5px;margin-left:6px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    #printArea .phk-lager-box{border-left:3px solid var(--interactive-strong)}
+    #printArea .phk-bestand-box{border-left:3px solid var(--brand-yellow);background:#fffdf0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
     #printArea .psum-note{padding:6px 12px;font-size:10px;color:#6b5a1e;background:#fff8e6;-webkit-print-color-adjust:exact;print-color-adjust:exact}
     #printArea table{width:100%;border-collapse:collapse;font-size:11.5px}
     #printArea td{padding:3px 6px;vertical-align:top}
@@ -209,10 +212,10 @@
   .hkkorb-item{display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin-bottom:7px;font-size:13px}
   .hkkorb-item.item-bestand{background:#fdf9e3;border-color:#e0cf5a}
   .korb-badge{display:inline-block;padding:1px 7px;border-radius:5px;font-size:10px;font-weight:700;margin-left:5px;white-space:nowrap}
-  .kb-lager{background:#2c6cb8;color:#fff}
-  .kb-bestand{background:#f5e400;color:#3a3000}
-  .mini-lager{color:#2c6cb8;font-weight:700}
-  .mini-bestand{background:#f5e400;color:#3a3000;padding:0 5px;border-radius:4px;font-size:10px;font-weight:700}
+  .kb-lager{background:var(--interactive-strong);color:#fff}
+  .kb-bestand{background:var(--brand-yellow);color:#3a3000}
+  .mini-lager{color:var(--interactive-strong);font-weight:700}
+  .mini-bestand{background:var(--brand-yellow);color:#3a3000;padding:0 5px;border-radius:4px;font-size:10px;font-weight:700}
   .hkkorb-item .hi-name{font-weight:700;color:var(--navy);flex:1}
   .hkkorb-item .hi-menge{display:flex;align-items:center;gap:4px}
   .hkkorb-item .hi-menge button{border:1px solid var(--line);background:#fff;color:var(--navy);border-radius:5px;width:24px;height:24px;padding:0;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;line-height:1}
@@ -374,7 +377,7 @@
             <div class="hint">Rücklauf °C</div>
           </div>
           <div>
-            <input type="number" id="dtlog" value="—" disabled style="background:#eef1f5">
+            <input type="number" id="dtlog" value="—" disabled style="background:var(--surface-cool)">
             <div class="hint">ΔT<sub>log</sub> K</div>
           </div>
         </div>
@@ -1450,10 +1453,10 @@ function renderFit(list,i,bedarf,lagerNichtNutzbar){
   const lagerTreffer = list.filter(r=>r.lagerBevorzugt);
   let lagerHinweis = lagerTreffer.length
     ? (HK_MODE==='multi'
-        ? `<div class="warnbox" style="background:#e8f0fb;border-color:#2c6cb8;color:#194a82">
+        ? `<div class="warnbox" style="background:var(--interactive-bg);border-color:var(--interactive-strong);color:var(--interactive-dark)">
              📦 <b>${lagerTreffer.length} Lager-Heizkörper</b> ${lagerTreffer.length>1?'passen':'passt'} in die Fläche und ${lagerTreffer.length>1?'sind':'ist'} oben markiert.
              Im Kombinations-Modus kannst du prüfen, ob sie sich – ggf. zusammen mit weiteren Heizkörpern – für den Raum nutzen lassen.</div>`
-        : `<div class="warnbox" style="background:#e8f0fb;border-color:#2c6cb8;color:#194a82">
+        : `<div class="warnbox" style="background:var(--interactive-bg);border-color:var(--interactive-strong);color:var(--interactive-dark)">
              📦 <b>${lagerTreffer.length} passende${lagerTreffer.length>1?' Heizkörper liegen':'r Heizkörper liegt'} auf Lager</b> und
              ${lagerTreffer.length>1?'werden':'wird'} bevorzugt vorgeschlagen (oben markiert). Kein Neukauf nötig, wenn die Deckung passt.</div>`)
     : '';
@@ -1868,16 +1871,16 @@ function runTempMulti(i){
 
   let ergebnisBox;
   if(res.unreachable){
-    ergebnisBox = `<div class="warnbox" style="background:#f4dede;border-color:#c0392b;color:#922">
+    ergebnisBox = `<div class="warnbox" style="background:var(--status-red-bg);border-color:#c0392b;color:#922">
       <b>Auch mit sehr hoher Vorlauftemperatur nicht deckbar.</b> Die gewählten Heizkörper reichen in Summe nicht aus,
       um ${Math.round(bedarf)} W zu liefern. Bitte einen größeren/zusätzlichen Heizkörper wählen (Tab ①).</div>`;
   } else if(res.oversized){
-    ergebnisBox = `<div class="warnbox" style="background:#e6f4ea;border-color:var(--green);color:#1a6e3a">
+    ergebnisBox = `<div class="warnbox" style="background:var(--status-green-bg);border-color:var(--green);color:#1a6e3a">
       <b>Bereits gedeckt.</b> Die Summe der Heizkörper deckt die Heizlast schon bei sehr niedriger Vorlauftemperatur
       (≤ ${res.tv.toFixed(1)} °C). Reserve ist vorhanden.</div>`;
   } else {
     const komfort = res.tv<=55;
-    ergebnisBox = `<div class="warnbox" style="background:${komfort?'#e6f4ea':'#fff7e6'};border-color:${komfort?'var(--green)':'var(--amber)'};color:${komfort?'#1a6e3a':'#7a5410'}">
+    ergebnisBox = `<div class="warnbox" style="background:${komfort?'var(--status-green-bg)':'var(--status-amber-bg)'};border-color:${komfort?'var(--green)':'var(--amber)'};color:${komfort?'#1a6e3a':'#7a5410'}">
       Damit die <b>Summe der ${HK_KORB.length} Heizkörper</b> die Heizlast (${Math.round(bedarf)} W inkl. ${i.reserve}% Reserve) deckt,
       ist eine gemeinsame Vorlauftemperatur von <b>${res.tv.toFixed(1)} °C</b> nötig (Rücklauf ${(res.tv-spreizung).toFixed(1)} °C, Spreizung ${spreizung} K).
       ${komfort?'✓ Das ist WP-tauglich (≤ 55 °C).':'⚠ Das liegt über dem WP-freundlichen Bereich (> 55 °C).'}</div>`;
@@ -1926,7 +1929,7 @@ function renderTemp(list,i,bedarf,spreizung){
     const komfort = r.tv<=55;
     const pill = komfort?'<span class="pill pill-fit">WP-tauglich</span>'
                : machbar?'<span class="pill pill-tight">hoch</span>'
-               : '<span class="pill pill-tight" style="background:#f4dede;color:#b23b3b">&gt;75°C</span>';
+               : '<span class="pill pill-tight" style="background:var(--status-red-bg);color:var(--status-red)">&gt;75°C</span>';
     return `<tr class="${komfort?'best':''} clickrow" data-idx="${idx}">
       <td><b>${db.typLabel(r.typ)}</b> ${r.v}</td>
       <td class="num">${r.bh}</td>
@@ -2045,7 +2048,7 @@ function runRoomMulti(i){
 
   let ergebnisBox;
   if(res.tL===null){
-    ergebnisBox = `<div class="warnbox" style="background:#f4dede;border-color:#c0392b;color:#922">
+    ergebnisBox = `<div class="warnbox" style="background:var(--status-red-bg);border-color:#c0392b;color:#922">
       <b>Die Heizkörper sind zu klein.</b> Selbst zusammen halten sie bei ${i.tv}/${i.tr} °C keine sinnvolle Raumtemperatur.
       Bitte größere/zusätzliche Heizkörper wählen (Tab ①).</div>`;
   } else {
@@ -2053,7 +2056,7 @@ function runRoomMulti(i){
     const knapp = res.tL >= i.tl - 1.0 && !erreicht;
     const farbe = erreicht?'var(--green)':knapp?'var(--amber)':'var(--red)';
     const diff = res.tL - i.tl;
-    ergebnisBox = `<div class="warnbox" style="background:${erreicht?'#e6f4ea':knapp?'#fff7e6':'#f4dede'};border-color:${farbe};color:${erreicht?'#1a6e3a':knapp?'#7a5410':'#922'}">
+    ergebnisBox = `<div class="warnbox" style="background:${erreicht?'var(--status-green-bg)':knapp?'var(--status-amber-bg)':'var(--status-red-bg)'};border-color:${farbe};color:${erreicht?'#1a6e3a':knapp?'#7a5410':'#922'}">
       Mit den <b>${HK_KORB.length} Heizkörpern zusammen</b> bei fester Vorlauftemperatur <b>${i.tv}/${i.tr} °C</b> stellt sich im
       Beharrungszustand (Norm-Außentemp. ${i.ta} °C) eine Raumtemperatur von <b style="font-size:16px">${res.tL.toFixed(1)} °C</b> ein
       (${diff>=0?'+':''}${diff.toFixed(1)} K zum Wunsch ${i.tl} °C).
@@ -2092,13 +2095,13 @@ function renderRoom(list,i){
     if(r.tL===null){
       return `<tr><td><b>${db.typLabel(r.typ)}</b> ${r.v}</td><td class="num">${r.bh}</td>
         <td class="num">${r.bl}</td><td class="num" style="color:var(--red)">—</td>
-        <td class="num">—</td><td class="num">—</td><td><span class="pill pill-tight" style="background:#f4dede;color:#b23b3b">zu klein</span></td></tr>`;
+        <td class="num">—</td><td class="num">—</td><td><span class="pill pill-tight" style="background:var(--status-red-bg);color:var(--status-red)">zu klein</span></td></tr>`;
     }
     const erreicht = r.tL >= i.tl - 0.05;
     const knapp = r.tL >= i.tl - 1.0 && !erreicht;
     const pill = erreicht ? '<span class="pill pill-fit">Wunsch erreicht</span>'
                : knapp   ? '<span class="pill pill-tight">knapp darunter</span>'
-               : '<span class="pill pill-tight" style="background:#f4dede;color:#b23b3b">'+r.tL.toFixed(1)+' °C</span>';
+               : '<span class="pill pill-tight" style="background:var(--status-red-bg);color:var(--status-red)">'+r.tL.toFixed(1)+' °C</span>';
     const diffTxt = r.diff>=0 ? '+'+r.diff.toFixed(1) : r.diff.toFixed(1);
     return `<tr class="${erreicht?'best':''} clickrow" data-idx="${idx}">
       <td><b>${db.typLabel(r.typ)}</b> ${r.v}${r.capped?' *':''}</td>
