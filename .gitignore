@@ -1,0 +1,7 @@
+# Artikeldaten aus der DATANORM des Großhandels.
+# Dürfen laut Vorlaufsatz ("Weitergabe an Dritte nicht erlaubt") NICHT in
+# dieses öffentliche Repository. Sie werden im Tool über "Artikeldaten laden"
+# eingelesen und im Browser gehalten.
+artikeldaten*.json
+DATANORM*
+DATPREIS*
