@@ -4,15 +4,6 @@
   "bestand": [
     {
       "hersteller": "kermi",
-      "typ": "33",
-      "bh": 600,
-      "bl": 2600,
-      "stueck": 1,
-      "v": "K",
-      "bauform": "profil"
-    },
-    {
-      "hersteller": "kermi",
       "typ": "22",
       "bh": 600,
       "bl": 600,
@@ -53,15 +44,6 @@
     },
     {
       "hersteller": "kermi",
-      "typ": "33",
-      "bh": 500,
-      "bl": 1600,
-      "stueck": 1,
-      "v": "K",
-      "bauform": "profil"
-    },
-    {
-      "hersteller": "kermi",
       "typ": "22",
       "bh": 300,
       "bl": 1600,
@@ -98,6 +80,63 @@
       "v": "V",
       "bauform": "plan",
       "anschluss": "links"
+    },
+    {
+      "hersteller": "kermi",
+      "typ": "33",
+      "bh": 500,
+      "bl": 1200,
+      "stueck": 1,
+      "v": "V",
+      "bauform": "profil",
+      "anschluss": "rechts"
+    },
+    {
+      "hersteller": "kermi",
+      "typ": "33",
+      "bh": 500,
+      "bl": 1000,
+      "stueck": 1,
+      "v": "V",
+      "bauform": "profil",
+      "anschluss": "rechts"
+    },
+    {
+      "hersteller": "kermi",
+      "typ": "33",
+      "bh": 600,
+      "bl": 1200,
+      "stueck": 1,
+      "v": "V",
+      "bauform": "profil",
+      "anschluss": "rechts"
+    },
+    {
+      "hersteller": "kermi",
+      "typ": "22",
+      "bh": 500,
+      "bl": 700,
+      "stueck": 1,
+      "v": "K",
+      "bauform": "profil"
+    },
+    {
+      "hersteller": "kermi",
+      "typ": "22",
+      "bh": 500,
+      "bl": 800,
+      "stueck": 1,
+      "v": "K",
+      "bauform": "profil"
+    },
+    {
+      "hersteller": "kermi",
+      "typ": "33",
+      "bh": 500,
+      "bl": 1200,
+      "stueck": 1,
+      "v": "K",
+      "bauform": "profil"
     }
   ]
 }
