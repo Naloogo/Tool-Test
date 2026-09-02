@@ -12,7 +12,14 @@
      4. Linien       – Rahmen und Trenner
      5. Interaktion  – Links, Buttons, Fokus
      6. Status       – Erfolg / Warnung / Fehler / Info
-     7. Form         – Radien, Schrift, Abstände
+     7. Status-Detail– weiche Flächen, dunkle Textvarianten
+     8. Zeilen       – Tabellen- und Zeilenzustände
+     9. Bestand      – Goldfamilie für Lager-/Bestandsteile
+    10. Grau         – neutrale Graustufen (Bildschirm + Druck)
+    11. Druck        – Rollennamen der Druckansicht
+    12. Schatten     – Schatten und Overlays
+    13. Übrige Tools – Farben aus den anderen vier Dateien
+    14. Form         – Radien, Schrift, Abstände
    ============================================================ */
 
 :root{
@@ -81,7 +88,157 @@
   --status-red-bg: #f4dede;
 
 
-  /* --- 7. Form -------------------------------------------- */
+  /* --- 7. Status-Detailfarben ------------------------------
+     Feinabstufungen fuer Badges und Hinweisboxen. Die Basisfarben
+     stehen in Abschnitt 6; hier liegen die weicheren Flaechen und
+     die dunkleren Textvarianten, die darauf lesbar bleiben. */
+  --success-text:          #1a6e3a;
+  --success-text-deep:     #1e5a38;
+  --success-bg-soft:       #e3f1e8;
+
+  --warn-text:             #7a5410;
+  --warn-text-strong:      #5c3f0c;
+  --warn-bg-soft:          #faf0dd;
+  --warn-bg-neutral:       #f6f3ea;
+  --warn-border-gold:      #c9a94a;
+  --warn-text-gold:        #6b5518;
+
+  --danger-text:           #992222;
+  --danger-border:         #c0392b;
+  --danger-strong:         #a83232;
+  --danger-bg-soft:        #f1d4d4;
+  --danger-bg-soft-hover:  #e8bcbc;
+  --danger-bg-faint:       #fdf2f2;
+
+  --info-text:             #1c4a72;
+  --info-bg-soft:          #eef4fb;
+
+  /* --- 8. Tabellen- und Zeilenzustaende --------------------- */
+  --row-hover:             #f0f5fa;   /* Hover ueber eine Ergebniszeile */
+  --row-best-bg:           #eaf5ee;   /* beste Treffer               */
+  --row-best-hover:        #e0f0e6;
+  --row-active-bg:         #dfeaf6;   /* angeklickte Zeile           */
+  --row-lager-bg:          #eff5fc;   /* Zeile aus dem Lagerbestand  */
+  --row-lager-hover:       #e2eefa;
+  --track-bg:              #e5e9ef;   /* Schiene von Fortschrittsbalken */
+  --surface-cool-hover:    #e9eef4;
+  --neutral-bg-warm:       #f4f4f0;
+  --placeholder:           #aab2bd;
+
+  /* --- 9. Bestand / Lager (Goldfamilie) ---------------------
+     Kennzeichnet vorhandene Heizkoerper aus dem Bestand. */
+  --bestand:               #d4a017;
+  --bestand-border:        #e0cf5a;
+  --bestand-bg:            #fdf9e3;
+  --bestand-bg-soft:       #fff8e6;
+  --bestand-bg-faint:      #fffdf0;
+  --bestand-text:          #5c4a0c;
+  --bestand-label:         #7a5c0c;
+  --on-yellow:             #3a3000;   /* Text auf --brand-yellow */
+  --on-gold:               #3a2f08;   /* Text auf --bestand      */
+
+  /* --- 10. Neutrale Graustufen ------------------------------
+     Reine Grauwerte ohne Farbstich. Werden sowohl auf dem Bildschirm
+     (Tabellen in bestandsaufnahme) als auch im Druck gebraucht –
+     deshalb einmal hier definiert und unten nur referenziert. */
+  --gray-900:              #000000;
+  --gray-800:              #333333;
+  --gray-700:              #555555;
+  --gray-600:              #666666;
+  --gray-500:              #777777;
+  --gray-400:              #aaaaaa;
+  --gray-350:              #bbbbbb;
+  --gray-300:              #cccccc;
+  --gray-250:              #dddddd;
+  --gray-200:              #e5e5e5;
+  --gray-150:              #eeeeee;
+
+  /* --- 11. Druckansicht ------------------------------------
+     Im Druck gilt nicht die Bildschirmpalette; Flaechen sollen dort
+     neutral und kontrastreich sein. Die Grauwerte kommen aus der
+     Skala oben, die Rollennamen bleiben fuer ein Redesign erhalten. */
+  --print-text:            var(--gray-900);
+  --print-text-2:          var(--gray-700);
+  --print-text-3:          var(--gray-600);
+  --print-text-4:          var(--gray-500);
+  --print-th-text:         var(--gray-800);
+  --print-on-navy-2:       #e8edf4;
+  --print-border:          var(--gray-300);
+  --print-border-light:    var(--gray-250);
+  --print-border-strong:   var(--gray-350);
+  --print-border-faint:    var(--gray-200);
+  --print-note-bg:         #fff6d6;
+  --print-note-border:     #e3c94a;
+  --print-note-text:       #6b5a1e;
+  --print-bestand-bg:      #fde9a8;
+
+  /* --- 12. Schatten und Overlays ---------------------------
+     Overlays liegen auf Navy- oder Gelbflaechen; sie brauchen
+     Transparenz, damit der Untergrund durchscheint. */
+  --shadow-sm:             rgba(0,0,0,.04);
+  --shadow-md:             rgba(0,0,0,.15);
+  --shadow-lg:             rgba(0,0,0,.25);
+
+  --overlay-white-12:      rgba(255,255,255,.12);
+  --overlay-white-14:      rgba(255,255,255,.14);
+  --overlay-white-15:      rgba(255,255,255,.15);
+  --overlay-white-16:      rgba(255,255,255,.16);
+  --overlay-white-25:      rgba(255,255,255,.25);
+  --overlay-white-30:      rgba(255,255,255,.3);
+
+  --shadow-soft:           rgba(0,0,0,.08);
+  --shadow-navy-13:        rgba(26,43,74,.13);
+  --shadow-navy-18:        rgba(26,43,74,.18);
+  --overlay-white-08:      rgba(255,255,255,.08);
+
+  --focus-ring:            rgba(61,122,184,.15);
+  --accent-glow:           rgba(61,122,184,.12);
+  --lager-overlay-bg:      rgba(44,108,184,.30);
+  --lager-overlay-border:  rgba(120,180,255,.5);
+  --bestand-overlay-bg:    rgba(245,228,0,.15);
+  --bestand-overlay-border:rgba(245,228,0,.5);
+
+  /* --- 13. Farben der uebrigen Tools -----------------------
+     Aus auslegung / kostenvergleich / bestandsaufnahme / index
+     herausgeloest. Werte unveraendert uebernommen. */
+
+  /* Gedaempfter Text auf Navy (Werkzeugtitel in der Kopfzeile) */
+  --text-on-dark-2:        #a8b4c8;
+  /* Kraeftigerer kuehler Fliesstext (bestandsaufnahme)         */
+  --text-cool-strong:      #1c2430;
+  --info-text-strong:      #123a63;
+
+  /* Goldfamilie der Prognose- und Kostenboxen.
+     Eigenstaendig gegenueber --bestand (#d4a017). */
+  --gold:                  #c98a2b;
+  --gold-hover:            #b5771f;
+  --gold-text:             #8a5e1a;
+  --gold-bg:               #fdf8f0;
+  --gold-label:            #b8860b;
+  --gold-bar:              #e0a11c;
+
+  /* Helle Blauflaechen (Boxen, weiche Buttons) */
+  --blue-bg:               #f5f8fc;
+  --blue-bg-2:             #f6f9fd;
+  --blue-hover:            #d5dfec;
+  --blue-soft:             #e4eaf1;
+  --blue-soft-hover:       #d5dfeb;
+
+  /* Herstellerkennzeichnung im Lagerbestand */
+  --mfr-verteo:            #5a3ea0;
+  --mfr-arbonia:           #3a7d5a;
+  --mfr-zehnder:           #8a6d1e;
+
+  /* Platzhalterflaeche der Kacheln auf der Landingpage */
+  --thumb-bg:              #dedbd2;
+
+  /* ACHTUNG, fast identische Paare – bewusst NICHT zusammengelegt,
+     weil das eine Design-Entscheidung waere:
+       --danger-bg-soft-hover  #e8bcbc  vs  ...-alt  #eec3c3
+       --blue-hover            #d5dfec  vs  --blue-soft-hover #d5dfeb  */
+  --danger-bg-soft-hover-alt: #eec3c3;
+
+  /* --- 14. Form -------------------------------------------- */
   --radius:      8px;
   --radius-lg:   16px;
   --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,

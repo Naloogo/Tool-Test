@@ -24,13 +24,13 @@
     display:flex; align-items:flex-start; justify-content:space-between;
     padding:26px 30px; margin:20px 0 28px;
     background:var(--brand-navy); border-radius:14px; flex-wrap:wrap; gap:16px;
-    box-shadow:0 1px 3px rgba(0,0,0,0.08);
+    box-shadow:0 1px 3px var(--shadow-soft);
   }
   .brand{display:inline-flex; flex-direction:column; align-items:center; gap:8px;}
   .brand img.logo-img{width:200px; height:auto; display:block;}
   .brand-sub{color:var(--brand-yellow); font-size:13px; font-weight:600; letter-spacing:1.2px; text-align:center; white-space:nowrap;}
-  .tool-title{font-size:13px; color:#a8b4c8; text-align:right; line-height:1.5;}
-  .tool-title strong{display:block; color:#fff; font-size:15px; font-weight:600;}
+  .tool-title{font-size:13px; color:var(--text-on-dark-2); text-align:right; line-height:1.5;}
+  .tool-title strong{display:block; color:var(--text-on-dark); font-size:15px; font-weight:600;}
   .zurueck{display:inline-flex; align-items:center; justify-content:center; width:48px; height:48px; flex-shrink:0; color:var(--accent); text-decoration:none; line-height:1; opacity:.45; transition:opacity .12s;}
   .zurueck:hover{opacity:1;}
   .zurueck:active{opacity:.3;}
@@ -57,8 +57,8 @@
   }
   select:focus, input[type=number]:focus{border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-bg);}
   input[type=range]{width:100%; -webkit-appearance:none; appearance:none; height:5px; border-radius:3px; background:var(--border-strong); outline:none;}
-  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; appearance:none; width:18px; height:18px; border-radius:50%; background:var(--accent); cursor:pointer; border:2px solid #fff; box-shadow:0 0 0 1px var(--border-strong);}
-  input[type=range]::-moz-range-thumb{width:18px; height:18px; border-radius:50%; background:var(--accent); cursor:pointer; border:2px solid #fff;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; appearance:none; width:18px; height:18px; border-radius:50%; background:var(--accent); cursor:pointer; border:2px solid var(--card); box-shadow:0 0 0 1px var(--border-strong);}
+  input[type=range]::-moz-range-thumb{width:18px; height:18px; border-radius:50%; background:var(--accent); cursor:pointer; border:2px solid var(--card);}
   input[type=range]:disabled::-webkit-slider-thumb{background:var(--success);}
   input[type=range]:disabled::-moz-range-thumb{background:var(--success);}
   .unit{font-size:14px; color:var(--text-2); white-space:nowrap;}
@@ -68,7 +68,7 @@
     background:var(--card); color:var(--text-2); border:none; cursor:pointer; border-right:1px solid var(--border-strong);
   }
   .segment button:last-child{border-right:none;}
-  .segment button.active{background:var(--accent); color:#fff; font-weight:500;}
+  .segment button.active{background:var(--accent); color:var(--text-on-dark); font-weight:500;}
   .heizart-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:14px;}
   .heizart-card{
     border:2px solid var(--border); border-radius:var(--radius); padding:18px 14px; text-align:center; cursor:pointer;
@@ -87,13 +87,13 @@
   .stat-val{font-size:24px; font-weight:600;}
   .stat-sub{font-size:12px; color:var(--text-3); margin-top:2px;}
   .note{font-size:12px; color:var(--text-3); line-height:1.55; margin-top:6px;}
-  .rec-card{border:2px solid var(--accent); border-radius:12px; padding:24px; background:var(--accent); box-shadow:0 2px 8px rgba(26,43,74,0.18);}
+  .rec-card{border:2px solid var(--accent); border-radius:12px; padding:24px; background:var(--accent); box-shadow:0 2px 8px var(--shadow-navy-18);}
   .rec-head{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:18px; flex-wrap:wrap; gap:6px;}
-  .rec-name{font-size:20px; font-weight:600; color:#fff;}
-  .rec-meta{font-size:13px; color:#a8b4c8;}
+  .rec-name{font-size:20px; font-weight:600; color:var(--text-on-dark);}
+  .rec-meta{font-size:13px; color:var(--text-on-dark-2);}
   .rec-stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:16px; margin-bottom:2px;}
-  .rec-stat{background:rgba(255,255,255,0.08); border-radius:var(--radius); padding:14px 16px; border:1px solid rgba(255,255,255,0.15);}
-  .rec-stat-lbl{font-size:12px; color:#a8b4c8;}
+  .rec-stat{background:var(--overlay-white-08); border-radius:var(--radius); padding:14px 16px; border:1px solid var(--overlay-white-15);}
+  .rec-stat-lbl{font-size:12px; color:var(--text-on-dark-2);}
   .rec-stat-val{font-size:26px; font-weight:700; margin-top:2px; color:var(--brand-yellow);}
   .bars{display:flex; flex-direction:column; gap:12px; margin-top:6px;}
   .bar-row{display:grid; grid-template-columns:150px 1fr 110px; align-items:center; gap:12px;}
@@ -105,7 +105,7 @@
   @media print{
     @page{ margin:12mm; }
     *{ -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; color-adjust:exact !important; box-shadow:none !important; }
-    body{ background:#fff; font-size:12px; }
+    body{ background:var(--card); font-size:12px; }
     .wrap{ max-width:100%; padding:0; }
     #print-btn-wrap{ display:none !important; }
     .zurueck{ display:none; }
@@ -118,7 +118,7 @@
     .subpanel{ margin-top:10px; padding-top:10px; }
     input[type=range]{ display:none; }
     #demand-num{ display:none; }
-    select{ border:1px solid #ccc; background:#fff !important; color:#000 !important; height:30px; }
+    select{ border:1px solid var(--print-border); background:var(--card) !important; color:var(--print-text) !important; height:30px; }
     .heizart-card{ cursor:default; padding:12px 10px; }
     .heizart-card:not(.active){ opacity:.55; }
     .heizart-icon{ font-size:22px; margin-bottom:3px; }
@@ -292,8 +292,8 @@
         <div class="bar-value" id="val-wp">0 €</div>
       </div>
       <div class="bar-row" id="bar-row-pv" style="display:none;">
-        <div class="bar-label" style="color:#b8860b">&#9728; WP + PV</div>
-        <div class="bar-track"><div class="bar-fill" id="bar-wp-pv" style="background:#e0a11c;width:0%"></div></div>
+        <div class="bar-label" style="color:var(--gold-label)">&#9728; WP + PV</div>
+        <div class="bar-track"><div class="bar-fill" id="bar-wp-pv" style="background:var(--gold-bar);width:0%"></div></div>
         <div class="bar-value" id="val-wp-pv">0 €</div>
       </div>
       <div class="bar-row">
@@ -339,7 +339,7 @@
   </div>
 
   <div style="text-align:center; margin-top:26px;" id="print-btn-wrap">
-    <button type="button" id="printBtn" style="height:44px; padding:0 26px; font-size:14px; font-weight:600; font-family:var(--font); color:#fff; background:var(--accent); border:none; border-radius:var(--radius); cursor:pointer;">
+    <button type="button" id="printBtn" style="height:44px; padding:0 26px; font-size:14px; font-weight:600; font-family:var(--font); color:var(--text-on-dark); background:var(--accent); border:none; border-radius:var(--radius); cursor:pointer;">
       &#128438; Drucken / als PDF speichern
     </button>
   </div>
