@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Angebotserstellung Badezimmer &middot; Lutz Spring GmbH</title>
+
+<!-- iOS-Homescreen-Betrieb: bitte unverändert lassen -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lutz Spring">
+<!-- Literal nötig: var() ist in <meta> ungültig -->
+<meta name="theme-color" content="#1a2b4a">
+<link rel="apple-touch-icon" href="logo.png">
+<link rel="icon" href="logo.png">
+
+<!-- Zentrale Design-Tokens. Muss VOR dem <style>-Block stehen. -->
+<link rel="stylesheet" href="theme.css">
+
+<style>
+  /* Datei-eigene Namen -> zentrale Tokens aus theme.css.
+     Farbwerte stehen ausschliesslich in theme.css. */
+  :root{
+    --accent:      var(--brand-navy);
+    --accent-text: var(--brand-navy);
+  }
+
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font);
+    line-height:1.5;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right)
+            env(safe-area-inset-bottom) env(safe-area-inset-left);
+    -webkit-tap-highlight-color:transparent;
+  }
+  .wrap{width:100%; max-width:1100px; margin:0 auto; padding:20px 20px 60px;}
+
+  /* --- Kopfbereich --- */
+  header{
+    background:var(--accent);
+    color:var(--text-on-dark);
+    border-radius:var(--radius-lg);
+    padding:22px 24px;
+    margin-bottom:18px;
+    display:flex; flex-wrap:wrap; gap:14px;
+    align-items:center; justify-content:space-between;
+  }
+  .logo-img{height:38px; width:auto; display:block;}
+  .brand-sub{font-size:12px; opacity:.75; margin-top:6px;}
+  .tool-title{text-align:right; font-size:14px; color:var(--text-on-dark-2);}
+  .tool-title strong{display:block; font-size:19px; color:var(--text-on-dark); margin-bottom:2px;}
+
+  .hinweis{
+    background:var(--status-amber-bg);
+    border:1px solid var(--status-amber);
+    color:var(--warn);
+    border-radius:var(--radius);
+    padding:12px 14px; font-size:13px; margin-bottom:18px;
+  }
+
+  /* --- Inhaltsblock --- */
+  .block{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:18px 20px;
+    margin-bottom:16px;
+  }
+  .block-title{
+    font-weight:600; font-size:16px;
+    color:var(--accent-text);
+    margin-bottom:14px;
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+  }
+  .block-title .zaehler{
+    font-size:12px; font-weight:600; color:var(--text-2);
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:20px; padding:2px 10px;
+  }
+
+  /* --- Formularfelder --- */
+  .fld{display:block; margin-bottom:14px; font-size:14px;}
+  .fld > span{display:block; color:var(--text-2); margin-bottom:5px;}
+  input, select, textarea{
+    width:100%; padding:9px 11px;
+    border:1px solid var(--border-strong);
+    border-radius:var(--radius);
+    background:var(--surface);
+    color:var(--text);
+    font-family:var(--font); font-size:15px;
+  }
+  textarea{min-height:66px; resize:vertical;}
+  input:focus, select:focus, textarea:focus{
+    outline:2px solid var(--interactive);
+    outline-offset:1px;
+    border-color:var(--interactive);
+  }
+  .raster{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:0 16px;}
+  .raster-breit{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:0 16px;}
+
+  /* --- Schaltflächen --- */
+  button{
+    font-family:var(--font); font-size:15px; font-weight:600;
+    padding:11px 20px;
+    border:1px solid var(--accent);
+    border-radius:var(--radius);
+    background:var(--accent);
+    color:var(--text-on-dark);
+    cursor:pointer;
+  }
+  button:hover{background:var(--brand-navy-light); border-color:var(--brand-navy-light);}
+  .mini-btn{
+    font-size:13px; font-weight:500; padding:6px 12px;
+    background:var(--card); color:var(--accent-text);
+    border-color:var(--border-strong);
+  }
+  .mini-btn:hover{background:var(--accent-bg); border-color:var(--accent);}
+  .btn-del{background:var(--danger-bg-soft); color:var(--status-red);
+           border-color:var(--danger-bg-soft);}
+  .btn-del:hover{background:var(--danger-bg-soft-hover); border-color:var(--danger-bg-soft-hover);}
+  .btn-reihe{display:flex; flex-wrap:wrap; gap:10px; margin-top:6px;}
+
+  /* --- Ausführungsfelder einer Position --- */
+  .ausf{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:14px 16px 2px;
+    margin:4px 0 14px;
+  }
+  .ausf-titel{
+    font-size:12px; font-weight:700; text-transform:uppercase;
+    letter-spacing:.5px; color:var(--text-2); margin-bottom:10px;
+  }
+
+  /* --- Positionsliste --- */
+  .pos{
+    border:1px solid var(--border);
+    border-left:4px solid var(--interactive);
+    border-radius:var(--radius);
+    padding:12px 14px;
+    margin-bottom:10px;
+    background:var(--card);
+  }
+  .pos-kopf{display:flex; justify-content:space-between; align-items:flex-start; gap:12px;}
+  .pos-name{font-weight:650; color:var(--accent-text);}
+  .pos-art{
+    display:inline-block; font-size:11px; font-weight:700;
+    text-transform:uppercase; letter-spacing:.4px;
+    background:var(--accent-bg); color:var(--accent-text);
+    border-radius:5px; padding:1px 8px; margin-right:8px;
+  }
+  .pos-menge{font-size:13px; color:var(--text-2); white-space:nowrap;}
+  .pos-detail{margin-top:8px; font-size:13px; color:var(--text-2);}
+  .pos-detail dl{display:grid; grid-template-columns:auto 1fr; gap:2px 10px; margin:0;}
+  .pos-detail dt{color:var(--text-3);}
+  .pos-detail dd{margin:0; color:var(--text);}
+  .pos-bem{margin-top:8px; font-size:13px; font-style:italic; color:var(--text-2);}
+  .pos-btns{display:flex; gap:8px; margin-top:10px;}
+  .leer{color:var(--text-3); font-size:13px;}
+
+  /* --- Zusammenfassung --- */
+  .ergebnis{
+    background:var(--accent-bg);
+    border:1px solid var(--accent);
+    border-radius:var(--radius);
+    padding:16px 18px;
+  }
+  .ergebnis-zeile{
+    display:flex; justify-content:space-between; gap:12px;
+    padding:7px 0; border-bottom:1px solid var(--border);
+    font-size:14px;
+  }
+  .ergebnis-zeile:last-child{border-bottom:0;}
+  .ergebnis-zeile b{color:var(--accent-text);}
+  .leise{color:var(--text-3); font-size:12px;}
+
+  /* --- Vollständigkeitshinweise --- */
+  .luecken{
+    margin-top:14px; padding-top:12px;
+    border-top:1px solid var(--border);
+  }
+  .luecken-titel{
+    font-size:11px; font-weight:700; text-transform:uppercase;
+    letter-spacing:.5px; color:var(--warn); margin-bottom:6px;
+  }
+  .luecken ul{margin:0; padding-left:18px;}
+  .luecken li{font-size:13px; color:var(--warn); margin-bottom:3px;}
+
+  footer{margin-top:26px; text-align:center; font-size:13px;}
+  footer a{color:var(--interactive); text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+
+  @media (max-width:560px){
+    header{flex-direction:column; align-items:flex-start;}
+    .tool-title{text-align:left;}
+  }
+
+  /* --- Druckansicht --- */
+  @media print{
+    body{background:var(--card); color:var(--print-text);}
+    .wrap{max-width:none; padding:0;}
+    .kein-druck{display:none !important;}
+    header{
+      border-radius:0; padding:14px 16px;
+      -webkit-print-color-adjust:exact; print-color-adjust:exact;
+    }
+    .block{border:0; padding:0; margin-bottom:14px; break-inside:avoid;}
+    .pos{break-inside:avoid; border-left-width:3px;}
+    .ausf{background:var(--card);}
+    input, select, textarea{border:1px solid var(--print-border); background:var(--card);}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <img class="logo-img" src="logo.png" alt="Lutz Spring GmbH">
+      <div class="brand-sub">Sanit&auml;r &middot; Heizung &middot; Klimatechnik</div>
+    </div>
+    <div class="tool-title">
+      <strong>Angebotserstellung Badezimmer</strong>
+      Bauvorhaben, W&uuml;nsche und Ausf&uuml;hrungen aufnehmen
+    </div>
+  </header>
+
+  <div class="hinweis">
+    &#9888; Bestandsaufnahme vor Ort: Sie h&auml;lt fest, <b>welche Komponenten ins
+    Angebot m&uuml;ssen</b>. Kalkuliert und bepreist wird nicht hier, sondern in Hero &ndash;
+    diese Liste ist die Vorlage daf&uuml;r.
+  </div>
+
+  <!-- ============ 1. Bauvorhaben ============ -->
+  <div class="block">
+    <div class="block-title">1 &middot; Bauvorhaben</div>
+    <div class="raster">
+      <label class="fld"><span>Bauvorhaben / Projektbezeichnung</span>
+        <input type="text" id="bv-projekt" placeholder="z. B. Neubau EFH Musterweg 4"></label>
+      <label class="fld"><span>Kunde</span>
+        <input type="text" id="bv-kunde" placeholder="z. B. Fam. M&uuml;ller"></label>
+      <label class="fld"><span>Bauort / Anschrift</span>
+        <input type="text" id="bv-ort" placeholder="Stra&szlig;e, PLZ Ort"></label>
+      <label class="fld"><span>Art der Ma&szlig;nahme</span>
+        <select id="bv-massnahme">
+          <option>Neubau</option>
+          <option>Komplettsanierung</option>
+          <option>Teilsanierung</option>
+          <option>Modernisierung im Bestand</option>
+          <option>Reparatur / Austausch</option>
+        </select></label>
+      <label class="fld"><span>Objektart</span>
+        <select id="bv-objekt">
+          <option>Einfamilienhaus</option>
+          <option>Doppelhaush&auml;lfte / Reihenhaus</option>
+          <option>Mehrfamilienhaus</option>
+          <option>Eigentumswohnung</option>
+          <option>Gewerbe / B&uuml;ro</option>
+          <option>Hotel / Pension</option>
+          <option>&Ouml;ffentliches Geb&auml;ude</option>
+        </select></label>
+      <label class="fld"><span>Raum</span>
+        <select id="bv-raum">
+          <option>Hauptbad</option>
+          <option>Duschbad</option>
+          <option>G&auml;ste-WC</option>
+          <option>Dachbad</option>
+          <option>Kellerbad</option>
+          <option>Wellness- / Spa-Bereich</option>
+          <option>Barrierefreies Bad</option>
+        </select></label>
+      <label class="fld"><span>Anzahl gleichartiger B&auml;der</span>
+        <input type="number" id="bv-anzahl" value="1" min="1" step="1" inputmode="numeric"></label>
+      <label class="fld"><span>Grundfl&auml;che (m&sup2;)</span>
+        <input type="number" id="bv-flaeche" step="0.1" min="0" inputmode="decimal" placeholder="z. B. 8,5"></label>
+      <label class="fld"><span>Gew&uuml;nschter Ausf&uuml;hrungszeitraum</span>
+        <input type="text" id="bv-termin" placeholder="z. B. KW 38&ndash;40 / 2026"></label>
+      <label class="fld"><span>Angebotsnummer</span>
+        <input type="text" id="bv-angebotsnr" placeholder="z. B. AN-2026-042"></label>
+      <label class="fld"><span>Datum</span>
+        <input type="date" id="bv-datum"></label>
+      <label class="fld"><span>Bearbeiter</span>
+        <input type="text" id="bv-bearbeiter" placeholder="K&uuml;rzel oder Name"></label>
+    </div>
+    <label class="fld"><span>Bauseitige Gegebenheiten / Bemerkungen</span>
+      <textarea id="bv-bemerkung" placeholder="z. B. Bestandsleitungen aus Blei, Steigstrang in Ecke, Estrich 6 cm, Fliesen bauseits"></textarea></label>
+  </div>
+
+  <!-- ============ 2. Position erfassen ============ -->
+  <div class="block kein-druck">
+    <div class="block-title"><span>2 &middot; Sanit&auml;rgegenstand erfassen</span>
+      <span class="zaehler" id="modus-anzeige">Neue Position</span></div>
+
+    <div class="raster">
+      <label class="fld"><span>Gegenstand</span>
+        <select id="p-art"></select></label>
+      <label class="fld"><span>Menge</span>
+        <input type="number" id="p-menge" value="1" min="1" step="1" inputmode="numeric"></label>
+      <label class="fld"><span>Einheit</span>
+        <select id="p-einheit">
+          <option value="Stk">Stk &ndash; St&uuml;ck</option>
+          <option value="psch">psch &ndash; pauschal</option>
+          <option value="m">m &ndash; Meter</option>
+          <option value="m2">m&sup2; &ndash; Quadratmeter</option>
+          <option value="h">h &ndash; Stunde</option>
+        </select></label>
+      <label class="fld"><span>Hersteller</span>
+        <input type="text" id="p-hersteller" placeholder="z. B. Duravit, Grohe, Villeroy &amp; Boch"></label>
+      <label class="fld"><span>Serie / Modell</span>
+        <input type="text" id="p-serie" placeholder="z. B. ME by Starck"></label>
+      <label class="fld"><span>Hersteller-Art.-Nr.</span>
+        <input type="text" id="p-artnr" placeholder="Nummer des Herstellers"></label>
+      <label class="fld"><span>Gro&szlig;handel-Art.-Nr.</span>
+        <input type="text" id="p-ghnr" placeholder="z. B. Wiedemann &ndash; f&uuml;r sp&auml;teren Angebotsimport"></label>
+      <label class="fld"><span>Oberfl&auml;che / Farbe</span>
+        <input type="text" id="p-oberflaeche" placeholder="z. B. Wei&szlig; alpin, Chrom, Schwarz matt"></label>
+    </div>
+
+    <!-- Ausführungsfelder, je nach gewähltem Gegenstand -->
+    <div class="ausf" id="p-ausf-box">
+      <div class="ausf-titel">Ausf&uuml;hrung</div>
+      <div class="raster" id="p-ausf"></div>
+    </div>
+
+    <label class="fld"><span>Bemerkung zur Position</span>
+      <textarea id="p-bemerkung" placeholder="z. B. Sonderma&szlig;, Kunde stellt bei, Muster vorlegen"></textarea></label>
+
+    <div class="btn-reihe">
+      <button id="btn-add">Position &uuml;bernehmen</button>
+      <button class="mini-btn" id="btn-abbrechen" hidden>Bearbeitung abbrechen</button>
+    </div>
+  </div>
+
+  <!-- ============ 3. Positionsliste ============ -->
+  <div class="block">
+    <div class="block-title"><span>3 &middot; Gew&uuml;nschte Ausstattung</span>
+      <span class="zaehler" id="pos-zaehler">0 Positionen</span></div>
+    <div id="pos-liste"><div class="leer">Noch keine Position erfasst.</div></div>
+  </div>
+
+  <!-- ============ 4. Zusammenfassung ============ -->
+  <div class="block">
+    <div class="block-title">4 &middot; Zusammenfassung</div>
+    <div class="ergebnis" id="summe"></div>
+    <div class="btn-reihe kein-druck">
+      <button class="mini-btn" id="btn-druck">Angebot drucken</button>
+      <button class="mini-btn" id="btn-gaeb">GAEB (.X83) f&uuml;r Hero</button>
+      <button class="mini-btn" id="btn-export">Projekt sichern (Datei)</button>
+      <button class="mini-btn" id="btn-import">Projekt laden (Datei)</button>
+      <button class="mini-btn btn-del" id="btn-reset">Alles zur&uuml;cksetzen</button>
+      <input type="file" id="datei" accept="application/json,.json" hidden>
+    </div>
+  </div>
+
+  <footer class="kein-druck">
+    <a href="index.html">&larr; Zur&uuml;ck zur &Uuml;bersicht</a>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var $ = function(id){ return document.getElementById(id); };
+
+  /* ------------------------------------------------------------
+     Katalog der Sanitärgegenstände.
+     Je Gegenstand die Ausführungsmerkmale, die im Angebot
+     benannt sein müssen. Erweitern: hier einen Eintrag ergänzen,
+     die Oberfläche baut sich daraus automatisch auf.
+     ------------------------------------------------------------ */
+  var KATALOG = {
+    wc: { label:'WC', felder:[
+      {id:'bauart',  label:'Bauart',            opt:['Wandh&auml;ngend','Bodenstehend','Stand-WC mit Sp&uuml;lkasten']},
+      {id:'spuelung',label:'Sp&uuml;lung',      opt:['Sp&uuml;lrandlos','Mit Sp&uuml;lrand']},
+      {id:'vorwand', label:'Vorwandelement',    opt:['Nein','Ja &ndash; Standard','Ja &ndash; barrierefrei','Ja &ndash; h&ouml;henverstellbar']},
+      {id:'platte',  label:'Bet&auml;tigungsplatte', typ:'text', ph:'z. B. Geberit Sigma30, schwarz matt'},
+      {id:'sitz',    label:'WC-Sitz',           opt:['Standard','Absenkautomatik','Absenkautomatik + abnehmbar']},
+      {id:'dusch',   label:'Dusch-WC-Funktion', opt:['Nein','Ja']}
+    ]},
+    waschtisch: { label:'Waschtisch', felder:[
+      {id:'art',     label:'Ausf&uuml;hrung',   opt:['M&ouml;belwaschtisch','Aufsatzbecken','Einbaubecken','Handwaschbecken','Doppelwaschtisch','Waschtisch barrierefrei']},
+      {id:'breite',  label:'Breite (cm)',       typ:'number', ph:'z. B. 100'},
+      {id:'material',label:'Material',          opt:['Keramik','Mineralguss','Glas','Naturstein']},
+      {id:'hahnloch',label:'Hahnl&ouml;cher',   opt:['1 Hahnloch','2 Hahnl&ouml;cher','ohne Hahnloch (Wandarmatur)']},
+      {id:'schrank', label:'Unterschrank',      opt:['Nein','Ja &ndash; passend zur Serie','Ja &ndash; abweichend']}
+    ]},
+    dusche: { label:'Dusche', felder:[
+      {id:'art',     label:'Ausf&uuml;hrung',   opt:['Bodengleich (gefliest)','Duschwanne flach','Duschwanne Standard','Duschwanne Mineralguss']},
+      {id:'masse',   label:'Ma&szlig;e B&times;T (cm)', typ:'text', ph:'z. B. 120 &times; 90'},
+      {id:'ablauf',  label:'Ablauf',            opt:['Punktablauf','Duschrinne Wand','Duschrinne Boden','Wandablauf']},
+      {id:'abtrenn', label:'Abtrennung',        opt:['Walk-in Festteil','Pendelt&uuml;r','Schiebet&uuml;r','Eckeinstieg','Faltt&uuml;r','Keine Abtrennung']},
+      {id:'glas',    label:'Glas',              opt:['Klarglas','Satiniert','Grauglas','Klarglas mit Beschichtung']},
+      {id:'beschlag',label:'Beschlagfarbe',     typ:'text', ph:'z. B. Chrom, Schwarz matt'}
+    ]},
+    badewanne: { label:'Badewanne', felder:[
+      {id:'form',    label:'Form',              opt:['Rechteck','Eckwanne','Freistehend','Raumsparwanne','Sechseck']},
+      {id:'masse',   label:'Ma&szlig;e B&times;T (cm)', typ:'text', ph:'z. B. 180 &times; 80'},
+      {id:'material',label:'Material',          opt:['Acryl','Stahl-Email','Mineralguss','Gusseisen']},
+      {id:'einbau',  label:'Einbau',            opt:['Wannentr&auml;ger + Verkleidung','Gemauerte Sch&uuml;rze','Freistehend','Einbau in Podest']},
+      {id:'garnitur',label:'Ab-/&Uuml;berlauf', typ:'text', ph:'z. B. Chrom, mit Bet&auml;tigung'},
+      {id:'extras',  label:'Zusatzausstattung', opt:['Keine','Griffe','Whirlsystem','Einstiegshilfe']}
+    ]},
+    armatur: { label:'Armatur', felder:[
+      {id:'einsatz', label:'Einsatzort',        opt:['Waschtisch','Dusche','Badewanne','Bidet','Sonstiges']},
+      {id:'bauart',  label:'Bauart',            opt:['Einhebelmischer Aufputz','Einhebelmischer Unterputz','Thermostat Aufputz','Thermostat Unterputz','Zweigriffarmatur','Sensorarmatur','Wandarmatur']},
+      {id:'oberfl',  label:'Oberfl&auml;che',   opt:['Chrom','Schwarz matt','Edelstahl geb&uuml;rstet','Wei&szlig;','Gold / Messing','Nickel geb&uuml;rstet']},
+      {id:'brause',  label:'Brausegarnitur',    opt:['Keine','Handbrause','Kopfbrause','Kopf- und Handbrause','Regendusche Decke']},
+      {id:'auslauf', label:'Auslaufh&ouml;he',  typ:'text', ph:'z. B. erh&ouml;ht f&uuml;r Aufsatzbecken'}
+    ]},
+    bidet: { label:'Bidet / Urinal', felder:[
+      {id:'typ',     label:'Typ',               opt:['Bidet wandh&auml;ngend','Bidet bodenstehend','Urinal','Urinal wasserlos']},
+      {id:'vorwand', label:'Vorwandelement',    opt:['Nein','Ja']},
+      {id:'steuer',  label:'Sp&uuml;lsteuerung',opt:['Manuell','Sensor / ber&uuml;hrungslos','Radar']},
+      {id:'deckel',  label:'Deckel',            opt:['Ohne','Mit Deckel']}
+    ]},
+    moebel: { label:'Badm&ouml;bel', felder:[
+      {id:'art',     label:'M&ouml;belart',     opt:['Waschtischunterschrank','Hochschrank','Mittelschrank','Seitenschrank','Rollcontainer']},
+      {id:'breite',  label:'Breite (cm)',       typ:'number', ph:'z. B. 60'},
+      {id:'front',   label:'Front / Dekor',     typ:'text', ph:'z. B. Eiche natur, Wei&szlig; Hochglanz'},
+      {id:'griff',   label:'Griffe',            opt:['Griffleiste','Griffmulde','Grifflos (Push-to-open)','Aufgesetzte Griffe']},
+      {id:'licht',   label:'Beleuchtung',       opt:['Ohne','LED integriert','LED mit Dimmer']}
+    ]},
+    spiegel: { label:'Spiegel / Spiegelschrank', felder:[
+      {id:'art',     label:'Ausf&uuml;hrung',   opt:['Spiegel','Spiegelschrank','Spiegel mit Rahmen']},
+      {id:'masse',   label:'Ma&szlig;e B&times;H (cm)', typ:'text', ph:'z. B. 100 &times; 70'},
+      {id:'licht',   label:'Beleuchtung',       opt:['Ohne','LED umlaufend','LED seitlich','LED oben','indirekt']},
+      {id:'extras',  label:'Zusatzfunktion',    opt:['Keine','Spiegelheizung','Steckdose','Steckdose + USB','Bluetooth-Lautsprecher']}
+    ]},
+    heizkoerper: { label:'Bad-/Handtuchheizk&ouml;rper', felder:[
+      {id:'bauart',  label:'Bauart',            opt:['Handtuchheizk&ouml;rper','R&ouml;hrenradiator','Designheizk&ouml;rper','Fu&szlig;bodenheizung Bad']},
+      {id:'masse',   label:'Ma&szlig;e B&times;H (cm)', typ:'text', ph:'z. B. 60 &times; 180'},
+      {id:'farbe',   label:'Farbe',             typ:'text', ph:'z. B. Wei&szlig;, Anthrazit'},
+      {id:'betrieb', label:'Betrieb',           opt:['Warmwasser','Elektrisch','Mischbetrieb']},
+      {id:'anschluss',label:'Anschluss',        opt:['Mittelanschluss','Seitlich','Von unten']}
+    ]},
+    zubehoer: { label:'Accessoires / Zubeh&ouml;r', felder:[
+      {id:'art',     label:'Art',               typ:'text', ph:'z. B. Handtuchhalter, Haltegriff, Duschablage'},
+      {id:'oberfl',  label:'Oberfl&auml;che',   typ:'text', ph:'z. B. Chrom, Schwarz matt'},
+      {id:'montage', label:'Montage',           opt:['Gebohrt','Geklebt','Freistehend']}
+    ]},
+    sonstiges: { label:'Sonstige Leistung', felder:[
+      {id:'beschreibung', label:'Beschreibung', typ:'text', ph:'z. B. Demontage Altbestand, Estricharbeiten'},
+      {id:'gewerk',  label:'Gewerk',            opt:['Sanit&auml;r','Fliesen','Elektro','Trockenbau','Maler','Sonstiges']}
+    ]}
+  };
+
+  /* --- Zustand ------------------------------------------------ */
+  var BV_FELDER = ['projekt','kunde','ort','massnahme','objekt','raum','anzahl',
+                   'flaeche','termin','angebotsnr','datum','bearbeiter','bemerkung'];
+  var state = { bauvorhaben:{}, positionen:[] };
+  var bearbeiteIndex = -1;                 // -1 = neue Position
+  var SPEICHER = 'lutzspring-bad-angebot';
+
+  function esc(s){
+    return String(s == null ? '' : s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;');
+  }
+  /* Katalogtexte enthalten bewusst HTML-Entities (Umlaute); fuer die
+     Anzeige als reiner Text werden sie hier wieder aufgeloest. */
+  function entText(s){
+    var d = document.createElement('textarea');
+    d.innerHTML = String(s == null ? '' : s);
+    return d.value;
+  }
+
+  /* --- Gegenstandsauswahl aufbauen ---------------------------- */
+  (function initArtSelect(){
+    var sel = $('p-art');
+    Object.keys(KATALOG).forEach(function(k){
+      var o = document.createElement('option');
+      o.value = k;
+      o.textContent = entText(KATALOG[k].label);
+      sel.appendChild(o);
+    });
+  })();
+
+  /* --- Ausführungsfelder zum gewählten Gegenstand rendern ----- */
+  function renderAusfuehrung(werte){
+    var art = $('p-art').value;
+    var def = KATALOG[art];
+    var box = $('p-ausf');
+    box.innerHTML = def.felder.map(function(f){
+      var v = werte && werte[f.id] != null ? werte[f.id] : '';
+      var label = '<span>' + f.label + '</span>';
+      if (f.opt){
+        var opts = f.opt.map(function(o){
+          var txt = entText(o);
+          return '<option value="' + esc(txt) + '"' +
+                 (txt === v ? ' selected' : '') + '>' + o + '</option>';
+        }).join('');
+        return '<label class="fld">' + label +
+               '<select data-ausf="' + f.id + '">' + opts + '</select></label>';
+      }
+      return '<label class="fld">' + label +
+             '<input type="' + (f.typ === 'number' ? 'number' : 'text') + '"' +
+             (f.typ === 'number' ? ' step="0.1" min="0" inputmode="decimal"' : '') +
+             ' data-ausf="' + f.id + '" value="' + esc(v) + '"' +
+             (f.ph ? ' placeholder="' + esc(entText(f.ph)) + '"' : '') + '></label>';
+    }).join('');
+  }
+
+  function ausfuehrungLesen(){
+    var o = {};
+    Array.prototype.forEach.call($('p-ausf').querySelectorAll('[data-ausf]'), function(el){
+      if (el.value !== '') o[el.getAttribute('data-ausf')] = el.value;
+    });
+    return o;
+  }
+
+  /* --- Eingabemaske ------------------------------------------- */
+  function maskeLeeren(){
+    ['p-hersteller','p-serie','p-artnr','p-ghnr','p-oberflaeche','p-bemerkung']
+      .forEach(function(id){ $(id).value = ''; });
+    $('p-menge').value = 1;
+    $('p-einheit').value = 'Stk';
+    bearbeiteIndex = -1;
+    $('btn-add').textContent = 'Position übernehmen';
+    $('btn-abbrechen').hidden = true;
+    $('modus-anzeige').textContent = 'Neue Position';
+    renderAusfuehrung(null);
+  }
+
+  function maskeFuellen(p){
+    $('p-art').value       = p.art;
+    $('p-menge').value     = p.menge;
+    $('p-einheit').value   = p.einheit || 'Stk';
+    $('p-hersteller').value= p.hersteller || '';
+    $('p-serie').value     = p.serie || '';
+    $('p-artnr').value     = p.artnr || '';
+    $('p-ghnr').value      = p.ghnr || '';
+    $('p-oberflaeche').value = p.oberflaeche || '';
+    $('p-bemerkung').value = p.bemerkung || '';
+    renderAusfuehrung(p.ausfuehrung);
+  }
+
+  /* --- Positionen --------------------------------------------- */
+  function positionUebernehmen(){
+    var menge = parseInt($('p-menge').value, 10);
+    if (isNaN(menge) || menge < 1) menge = 1;
+    var p = {
+      art:         $('p-art').value,
+      menge:       menge,
+      einheit:     $('p-einheit').value,
+      hersteller:  $('p-hersteller').value.trim(),
+      serie:       $('p-serie').value.trim(),
+      artnr:       $('p-artnr').value.trim(),
+      ghnr:        $('p-ghnr').value.trim(),
+      oberflaeche: $('p-oberflaeche').value.trim(),
+      ausfuehrung: ausfuehrungLesen(),
+      bemerkung:   $('p-bemerkung').value.trim()
+    };
+    if (bearbeiteIndex >= 0) state.positionen[bearbeiteIndex] = p;
+    else state.positionen.push(p);
+    maskeLeeren();
+    speichern();
+    renderListe();
+  }
+
+  function positionBearbeiten(i){
+    bearbeiteIndex = i;
+    maskeFuellen(state.positionen[i]);
+    $('btn-add').textContent = 'Änderung speichern';
+    $('btn-abbrechen').hidden = false;
+    $('modus-anzeige').textContent = 'Position ' + (i + 1) + ' bearbeiten';
+    $('p-art').scrollIntoView({block:'start'});
+  }
+
+  function positionLoeschen(i){
+    var name = entText(KATALOG[state.positionen[i].art].label);
+    if (!window.confirm('Position „' + name + '“ wirklich entfernen?')) return;
+    state.positionen.splice(i, 1);
+    if (bearbeiteIndex === i) maskeLeeren();
+    else if (bearbeiteIndex > i) bearbeiteIndex--;
+    speichern();
+    renderListe();
+  }
+
+  function positionVerschieben(i, richtung){
+    var j = i + richtung;
+    if (j < 0 || j >= state.positionen.length) return;
+    var t = state.positionen[i];
+    state.positionen[i] = state.positionen[j];
+    state.positionen[j] = t;
+    speichern();
+    renderListe();
+  }
+
+  /* --- Anzeige ------------------------------------------------ */
+  function renderListe(){
+    var box = $('pos-liste');
+    var n = state.positionen.length;
+    $('pos-zaehler').textContent = n === 1 ? '1 Position' : n + ' Positionen';
+
+    if (!n){
+      box.innerHTML = '<div class="leer">Noch keine Position erfasst.</div>';
+      renderSumme();
+      return;
+    }
+
+    box.innerHTML = state.positionen.map(function(p, i){
+      var def = KATALOG[p.art];
+      var kopfteile = [];
+      if (p.hersteller) kopfteile.push(esc(p.hersteller));
+      if (p.serie)      kopfteile.push(esc(p.serie));
+      var name = kopfteile.length ? kopfteile.join(' · ') : entText(def.label);
+
+      var details = [];
+      def.felder.forEach(function(f){
+        var v = p.ausfuehrung ? p.ausfuehrung[f.id] : null;
+        if (v) details.push('<dt>' + f.label + '</dt><dd>' + esc(v) + '</dd>');
+      });
+      if (p.oberflaeche) details.push('<dt>Oberfl&auml;che</dt><dd>' + esc(p.oberflaeche) + '</dd>');
+      if (p.artnr)       details.push('<dt>Hersteller-Nr.</dt><dd>' + esc(p.artnr) + '</dd>');
+      if (p.ghnr)        details.push('<dt>Gro&szlig;handel-Nr.</dt><dd>' + esc(p.ghnr) + '</dd>');
+
+      return '<div class="pos">' +
+        '<div class="pos-kopf">' +
+          '<div><span class="pos-art">' + def.label + '</span>' +
+               '<span class="pos-name">' + name + '</span></div>' +
+          '<div class="pos-menge">' + p.menge + ' ' + esc(p.einheit || 'Stk') + '</div>' +
+        '</div>' +
+        (details.length ? '<div class="pos-detail"><dl>' + details.join('') + '</dl></div>' : '') +
+        (p.bemerkung ? '<div class="pos-bem">' + esc(p.bemerkung) + '</div>' : '') +
+        '<div class="pos-btns kein-druck">' +
+          '<button class="mini-btn" data-akt="edit" data-i="' + i + '">Bearbeiten</button>' +
+          '<button class="mini-btn" data-akt="up"   data-i="' + i + '"' + (i === 0 ? ' disabled' : '') + '>&uarr;</button>' +
+          '<button class="mini-btn" data-akt="down" data-i="' + i + '"' + (i === n - 1 ? ' disabled' : '') + '>&darr;</button>' +
+          '<button class="mini-btn btn-del" data-akt="del" data-i="' + i + '">Entfernen</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    renderSumme();
+  }
+
+  /* ------------------------------------------------------------
+     Zusammenfassung: zaehlt die Komponenten und weist auf typische
+     Luecken hin. Zweck ist nicht Kalkulation, sondern dass beim
+     Angebot nichts vergessen wird.
+     ------------------------------------------------------------ */
+
+  /* Regel: wenn <art> erfasst ist, wird <erwartet> ueblicherweise
+     mit angeboten. pruef() darf null zurueckgeben (= alles gut). */
+  var LUECKEN = [
+    { wenn:'waschtisch',  dann:function(p){ return hatArmatur('Waschtisch'); },
+      text:'Waschtisch erfasst, aber keine Waschtischarmatur.' },
+    { wenn:'dusche',      dann:function(p){ return hatArmatur('Dusche'); },
+      text:'Dusche erfasst, aber keine Duscharmatur.' },
+    { wenn:'badewanne',   dann:function(p){ return hatArmatur('Badewanne'); },
+      text:'Badewanne erfasst, aber keine Wannenarmatur.' },
+    { wenn:'waschtisch',  dann:function(){ return hat('spiegel'); },
+      text:'Waschtisch erfasst, aber kein Spiegel / Spiegelschrank.' },
+    { wenn:'moebel',      dann:function(){ return hat('spiegel'); },
+      text:'Badm\u00f6bel erfasst, aber kein Spiegel / Spiegelschrank.' }
+  ];
+
+  function hat(art){
+    return state.positionen.some(function(p){ return p.art === art; });
+  }
+  function hatArmatur(einsatz){
+    return state.positionen.some(function(p){
+      return p.art === 'armatur' && p.ausfuehrung &&
+             entText(p.ausfuehrung.einsatz || '') === einsatz;
+    });
+  }
+
+  function luecken(){
+    var l = [];
+    LUECKEN.forEach(function(r){
+      if (hat(r.wenn) && !r.dann() && l.indexOf(r.text) === -1) l.push(r.text);
+    });
+    // Komponenten, die in fast jedem Bad vorkommen
+    [['wc','WC'], ['waschtisch','Waschtisch'], ['heizkoerper','Heizk\u00f6rper / Handtuchw\u00e4rmer']]
+      .forEach(function(k){
+        if (!hat(k[0])) l.push('Noch kein Eintrag: ' + k[1] + '.');
+      });
+    return l;
+  }
+
+  function renderSumme(){
+    if (!state.positionen.length){
+      $('summe').innerHTML = '<div class="leise">Sobald Positionen erfasst sind, ' +
+        'erscheint hier die \u00dcbersicht mit Vollst\u00e4ndigkeitspr\u00fcfung.</div>';
+      return;
+    }
+
+    var zeilen = [];
+    var stueck = state.positionen.reduce(function(s,p){ return s + p.menge; }, 0);
+    var baeder = parseInt($('bv-anzahl').value, 10);
+    if (isNaN(baeder) || baeder < 1) baeder = 1;
+
+    zeilen.push({ label:'Positionen', wert: state.positionen.length });
+    zeilen.push({ label:'Gegenst\u00e4nde gesamt', wert: stueck + ' St\u00fcck' });
+    if (baeder > 1){
+      zeilen.push({ label:'Bei ' + baeder + ' gleichartigen B\u00e4dern',
+                    wert: (stueck * baeder) + ' St\u00fcck' });
+    }
+
+    var proArt = {};
+    state.positionen.forEach(function(p){ proArt[p.art] = (proArt[p.art] || 0) + p.menge; });
+    Object.keys(proArt).forEach(function(k){
+      zeilen.push({ label:'&nbsp;&nbsp;' + KATALOG[k].label, wert: proArt[k] + ' \u00d7', leise:true });
+    });
+
+    // Fuer den spaeteren Angebotsimport: wie weit sind die Nummern gepflegt?
+    var ohneGh = state.positionen.filter(function(p){ return !p.ghnr; }).length;
+    zeilen.push({ label:'Mit Gro\u00dfhandel-Art.-Nr.',
+                  wert:(state.positionen.length - ohneGh) + ' von ' + state.positionen.length });
+
+    var html = zeilen.map(function(z){
+      return '<div class="ergebnis-zeile"><span' + (z.leise ? ' class="leise"' : '') + '>' +
+             z.label + '</span><b>' + z.wert + '</b></div>';
+    }).join('');
+
+    var l = luecken();
+    if (l.length){
+      html += '<div class="luecken"><div class="luecken-titel">Bitte pr\u00fcfen</div><ul>' +
+              l.map(function(t){ return '<li>' + t + '</li>'; }).join('') +
+              '</ul></div>';
+    }
+    $('summe').innerHTML = html;
+  }
+
+  /* --- Speichern / Laden -------------------------------------- */
+  function bvLesen(){
+    var o = {};
+    BV_FELDER.forEach(function(f){ o[f] = $('bv-' + f).value; });
+    return o;
+  }
+  function bvSchreiben(o){
+    BV_FELDER.forEach(function(f){
+      if (o && o[f] != null) $('bv-' + f).value = o[f];
+    });
+  }
+
+  function speichern(){
+    state.bauvorhaben = bvLesen();
+    try{
+      window.localStorage.setItem(SPEICHER, JSON.stringify(state));
+    }catch(e){ /* z. B. privater Modus: Erfassung laeuft trotzdem weiter */ }
+  }
+
+  function laden(){
+    try{
+      var roh = window.localStorage.getItem(SPEICHER);
+      if (!roh) return;
+      var d = JSON.parse(roh);
+      if (d && typeof d === 'object'){
+        state.positionen = Array.isArray(d.positionen) ? d.positionen.filter(gueltig) : [];
+        bvSchreiben(d.bauvorhaben);
+      }
+    }catch(e){ /* defekter Eintrag: leer starten */ }
+  }
+
+  function gueltig(p){
+    return p && typeof p === 'object' && KATALOG[p.art];
+  }
+
+  /* ------------------------------------------------------------
+     GAEB-Export, Austauschphase 83 (Angebotsaufforderung).
+     Format: GAEB DA XML 3.2, Namensraum .../DA83/3.2 — die Struktur
+     folgt einer verifizierten Beispieldatei (GAEB-Fachdokumentation
+     3.2, Stand 2013-10). Bewusst ohne Preise: bepreist wird in Hero.
+
+     Aufbau:  GAEB > Award > BoQ > BoQBody > BoQCtgy (je Gegenstands-
+     art eine Gruppe) > Itemlist > Item (Qty, QU, Kurz-, Langtext).
+     ------------------------------------------------------------ */
+
+  function xmlEsc(t){
+    return String(t == null ? '' : t)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&apos;');
+  }
+  function zwei(n){ return (n < 10 ? '0' : '') + n; }
+  function drei(n){ return ('00' + n).slice(-3); }
+
+  var idZaehler = 0;
+  function gaebId(){
+    idZaehler++;
+    return 'ID_' + Date.now().toString(16) + '_' + drei(idZaehler);
+  }
+
+  /* Kurztext: knapp halten, GAEB-Kurztexte sind einzeilig gedacht. */
+  function kurztext(p){
+    var def = KATALOG[p.art];
+    var teile = [entText(def.label)];
+    if (p.hersteller) teile.push(entText(p.hersteller));
+    if (p.serie)      teile.push(entText(p.serie));
+    if (!p.hersteller && !p.serie && p.ausfuehrung){
+      var erstes = def.felder[0];
+      if (erstes && p.ausfuehrung[erstes.id]) teile.push(entText(p.ausfuehrung[erstes.id]));
+    }
+    var t = teile.join(', ');
+    return t.length > 70 ? t.slice(0, 67) + '...' : t;
+  }
+
+  /* Langtext: die vollständige Ausführung — das ist der Teil, der
+     sonst von Hand ins Angebot getippt wird. */
+  function langtextZeilen(p){
+    var def = KATALOG[p.art];
+    var z = [];
+    if (p.hersteller || p.serie){
+      z.push('Fabrikat: ' + [entText(p.hersteller), entText(p.serie)]
+                              .filter(Boolean).join(' ') );
+    }
+    def.felder.forEach(function(f){
+      var v = p.ausfuehrung ? p.ausfuehrung[f.id] : null;
+      if (v) z.push(entText(f.label) + ': ' + entText(v));
+    });
+    if (p.oberflaeche) z.push('Oberfläche/Farbe: ' + entText(p.oberflaeche));
+    if (p.artnr)       z.push('Hersteller-Art.-Nr.: ' + entText(p.artnr));
+    if (p.ghnr)        z.push('Großhandel-Art.-Nr.: ' + entText(p.ghnr));
+    if (p.bemerkung)   z.push('Bemerkung: ' + entText(p.bemerkung));
+    return z;
+  }
+
+  function gaebErzeugen(){
+    var bv = bvLesen();
+    var jetzt = new Date();
+    var datum = jetzt.getFullYear() + '-' + zwei(jetzt.getMonth()+1) + '-' + zwei(jetzt.getDate());
+    var zeit  = zwei(jetzt.getHours()) + ':' + zwei(jetzt.getMinutes()) + ':' + zwei(jetzt.getSeconds());
+
+    var projekt = bv.projekt || 'Badezimmer';
+    var bezeichnung = [bv.kunde, bv.raum].filter(Boolean).join(' – ') || 'Badezimmer';
+
+    // Positionen nach Gegenstandsart gruppieren, Reihenfolge bleibt erhalten
+    var reihenfolge = [], gruppen = {};
+    state.positionen.forEach(function(p){
+      if (!gruppen[p.art]){ gruppen[p.art] = []; reihenfolge.push(p.art); }
+      gruppen[p.art].push(p);
+    });
+
+    var x = [];
+    x.push('<?xml version="1.0" encoding="UTF-8"?>');
+    x.push('<GAEB xmlns="http://www.gaeb.de/GAEB_DA_XML/DA83/3.2">');
+    x.push('  <GAEBInfo>');
+    x.push('    <Version>3.2</Version>');
+    x.push('    <VersDate>2013-10</VersDate>');
+    x.push('    <Date>' + datum + '</Date>');
+    x.push('    <Time>' + zeit + '</Time>');
+    x.push('    <ProgSystem>Lutz Spring GmbH – Angebotserstellung Badezimmer</ProgSystem>');
+    x.push('    <ProgName>bad-angebot.html</ProgName>');
+    x.push('  </GAEBInfo>');
+    x.push('  <PrjInfo>');
+    x.push('    <NamePrj>' + xmlEsc(projekt) + '</NamePrj>');
+    x.push('    <LblPrj>' + xmlEsc(bezeichnung) + '</LblPrj>');
+    if (bv.ort || bv.massnahme){
+      x.push('    <Descrip><span>' +
+             xmlEsc([bv.massnahme, bv.objekt, bv.ort].filter(Boolean).join(', ')) +
+             '</span></Descrip>');
+    }
+    x.push('    <Cur>EUR</Cur>');
+    x.push('    <CurLbl>Euro</CurLbl>');
+    x.push('  </PrjInfo>');
+    x.push('  <Award>');
+    x.push('    <DP>83</DP>');
+    x.push('    <AwardInfo>');
+    x.push('      <Cur>EUR</Cur>');
+    x.push('      <CurLbl>Euro</CurLbl>');
+    x.push('    </AwardInfo>');
+    x.push('    <BoQ ID="' + gaebId() + '">');
+    x.push('      <BoQInfo>');
+    x.push('        <Name>' + xmlEsc(projekt) + '</Name>');
+    x.push('        <LblBoQ>' + xmlEsc(bezeichnung) + '</LblBoQ>');
+    x.push('        <Date>' + datum + '</Date>');
+    x.push('      </BoQInfo>');
+    x.push('      <BoQBody>');
+
+    reihenfolge.forEach(function(art, gi){
+      x.push('        <BoQCtgy ID="' + gaebId() + '" RNoPart="' + zwei(gi+1) + '">');
+      x.push('          <LblTx>' + xmlEsc(entText(KATALOG[art].label)) + '</LblTx>');
+      x.push('          <BoQBody>');
+      x.push('            <Itemlist>');
+      gruppen[art].forEach(function(p, pi){
+        x.push('              <Item ID="' + gaebId() + '" RNoPart="' + drei(pi+1) + '">');
+        x.push('                <Qty>' + p.menge + '</Qty>');
+        x.push('                <QU>' + xmlEsc(p.einheit || 'Stk') + '</QU>');
+        x.push('                <Description>');
+        x.push('                  <CompleteText>');
+        x.push('                    <DetailTxt>');
+        x.push('                      <Text>');
+        langtextZeilen(p).forEach(function(z){
+          x.push('                        <p><span>' + xmlEsc(z) + '</span></p>');
+        });
+        x.push('                      </Text>');
+        x.push('                    </DetailTxt>');
+        x.push('                    <OutlineText>');
+        x.push('                      <TextOutlTxt><span>' + xmlEsc(kurztext(p)) +
+               '</span></TextOutlTxt>');
+        x.push('                    </OutlineText>');
+        x.push('                  </CompleteText>');
+        x.push('                </Description>');
+        x.push('              </Item>');
+      });
+      x.push('            </Itemlist>');
+      x.push('          </BoQBody>');
+      x.push('        </BoQCtgy>');
+    });
+
+    x.push('      </BoQBody>');
+    x.push('    </BoQ>');
+    x.push('  </Award>');
+    x.push('</GAEB>');
+    return x.join('\n');
+  }
+
+  function gaebExport(){
+    if (!state.positionen.length){
+      window.alert('Es ist noch keine Position erfasst.');
+      return;
+    }
+    var xml = gaebErzeugen();
+    // Selbstkontrolle: wohlgeformtes XML?
+    var pruef = new DOMParser().parseFromString(xml, 'application/xml');
+    if (pruef.getElementsByTagName('parsererror').length){
+      window.alert('Die GAEB-Datei konnte nicht erzeugt werden (XML-Fehler). Bitte melden.');
+      return;
+    }
+    datenDownload(xml, dateiname() + '.X83', 'application/xml');
+  }
+
+  function dateiname(){
+    return (bvLesen().projekt || 'bad-angebot')
+             .replace(/[^\wäöüÄÖÜß -]/g,'').trim() || 'bad-angebot';
+  }
+
+  function datenDownload(inhalt, name, typ){
+    var blob = new Blob([inhalt], {type: typ});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+  }
+
+  function exportieren(){
+    state.bauvorhaben = bvLesen();
+    datenDownload(JSON.stringify(state, null, 2), dateiname() + '.json', 'application/json');
+  }
+
+  function importieren(datei){
+    var leser = new FileReader();
+    leser.onload = function(){
+      try{
+        var d = JSON.parse(leser.result);
+        if (!d || !Array.isArray(d.positionen)) throw new Error('Format');
+        state.positionen = d.positionen.filter(gueltig);
+        bvSchreiben(d.bauvorhaben);
+        maskeLeeren();
+        speichern();
+        renderListe();
+      }catch(e){
+        window.alert('Die Datei konnte nicht gelesen werden. Erwartet wird eine mit diesem Tool gesicherte JSON-Datei.');
+      }
+    };
+    leser.readAsText(datei);
+  }
+
+  function zuruecksetzen(){
+    if (!window.confirm('Bauvorhaben und alle Positionen verwerfen?')) return;
+    state = { bauvorhaben:{}, positionen:[] };
+    BV_FELDER.forEach(function(f){
+      var el = $('bv-' + f);
+      if (el.tagName === 'SELECT') el.selectedIndex = 0;
+      else el.value = (f === 'anzahl') ? '1' : '';
+    });
+    try{ window.localStorage.removeItem(SPEICHER); }catch(e){}
+    maskeLeeren();
+    renderListe();
+  }
+
+  /* --- Verdrahtung -------------------------------------------- */
+  $('p-art').addEventListener('change', function(){ renderAusfuehrung(null); });
+  $('btn-add').addEventListener('click', positionUebernehmen);
+  $('btn-abbrechen').addEventListener('click', maskeLeeren);
+
+  $('pos-liste').addEventListener('click', function(ev){
+    var b = ev.target.closest('button[data-akt]');
+    if (!b) return;
+    var i = parseInt(b.getAttribute('data-i'), 10);
+    var akt = b.getAttribute('data-akt');
+    if (akt === 'edit') positionBearbeiten(i);
+    else if (akt === 'del') positionLoeschen(i);
+    else if (akt === 'up') positionVerschieben(i, -1);
+    else if (akt === 'down') positionVerschieben(i, 1);
+  });
+
+  BV_FELDER.forEach(function(f){
+    $('bv-' + f).addEventListener('input', function(){ speichern(); renderSumme(); });
+    $('bv-' + f).addEventListener('change', function(){ speichern(); renderSumme(); });
+  });
+
+  $('btn-druck').addEventListener('click', function(){ window.print(); });
+  $('btn-gaeb').addEventListener('click', gaebExport);
+  $('btn-export').addEventListener('click', exportieren);
+  $('btn-import').addEventListener('click', function(){ $('datei').click(); });
+  $('datei').addEventListener('change', function(){
+    if (this.files && this.files[0]) importieren(this.files[0]);
+    this.value = '';
+  });
+  $('btn-reset').addEventListener('click', zuruecksetzen);
+
+  /* --- Start --------------------------------------------------- */
+  if (!$('bv-datum').value){
+    $('bv-datum').value = new Date().toISOString().slice(0, 10);
+  }
+  laden();
+  maskeLeeren();
+  renderListe();
+})();
+</script>
+</body>
+</html>
