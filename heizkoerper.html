@@ -136,6 +136,8 @@
   .btn-io{padding:10px 16px;background:var(--bg);color:var(--navy);border:1px solid var(--line);border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;white-space:nowrap;text-align:center}
   .btn-io:hover{background:var(--surface-cool-hover);border-color:var(--accent)}
   @media(max-width:700px){.proj-io-btns{flex-direction:column}.proj-io-btns button,.proj-io-btns label{width:100%}}
+  .gaeb-zeit{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);font-weight:600}
+  .gaeb-zeit input{width:72px;padding:6px 8px;border:1px solid var(--line);border-radius:7px;font-size:13px;background:var(--card);color:var(--text);font-family:inherit}
   .ioswarn{display:none;background:var(--status-amber-bg);border:1px solid var(--amber);border-left:4px solid var(--amber);border-radius:10px;padding:14px 18px;margin-bottom:16px;color:var(--warn-text);font-size:13.5px}
   .ioswarn b{color:var(--warn-text-strong)}
   .raumliste{margin-top:14px;display:flex;flex-direction:column;gap:8px}
@@ -310,6 +312,13 @@
       <button class="btn-pdf" id="berichtPdf">Als PDF speichern</button>
       <button class="btn-io" id="projektExport">⤓ Projekt sichern (Datei)</button>
       <label class="btn-io" for="projektImportFile">⤒ Projekt laden (Datei)</label>
+      <button class="btn-io" id="gaebExport">⤓ GAEB (.X83) für Hero</button>
+      <label class="btn-io" for="artikelDatei" id="artikelLabel">⤒ Artikeldaten laden</label>
+      <input type="file" id="artikelDatei" accept=".json,application/json" style="display:none">
+      <label class="gaeb-zeit">Montagezeit je HK
+        <input type="number" id="gaebMinuten" min="0" step="5" placeholder="Min."
+               title="Leer lassen, wenn die Arbeitszeit in Hero ergänzt wird">
+      </label>
       <input type="file" id="projektImportFile" accept=".json,application/json" style="display:none">
     </div>
   </div>
@@ -2348,8 +2357,15 @@ function speichereRaum(){
     else if(vlRes.oversized) noetigeVLtext = '≤'+vlRes.tv.toFixed(1);
     else noetigeVLtext = vlRes.tv.toFixed(1);
     // HK-Liste mit Konsolen aufbereiten (Anzahl mitführen)
+    const hvMulti = HERSTELLER;
     const hkliste = HK_KORB.map(h=>({
       typLabel: h.modell, bh:h.bh, bl:h.bl, bt:h.tiefe,
+      // QN = Normwaermeleistung 75/65/20 (W). Steht im Angebot in der
+      // Artikelbezeichnung ("QN1999") und wird fuer den GAEB-Export gebraucht.
+      qn: (function(){ HERSTELLER=h.hersteller;
+             const q=DB().normW(h.typ,h.bh,h.bl); HERSTELLER=hvMulti;
+             return q!=null?Math.round(q):null; })(),
+      typ: h.typ, v: h.v||'', hersteller: h.hersteller,
       anzahl: h.anzahl||1,
       leistung:h.w, leistungGesamt:h.w*(h.anzahl||1),
       modell:h.modell, klartext:h.klartext,
@@ -2413,6 +2429,9 @@ function speichereRaum(){
     maxH:i.maxH, maxL:i.maxL,
     hk:{
       typLabel:typLabelStr, bh:a.r.bh, bl:a.r.bl, bt:a.r.tiefe,
+      qn: (function(){ const q=DB().normW(a.r.typ,a.r.bh,a.r.bl);
+                       return q!=null?Math.round(q):null; })(),
+      typ:a.r.typ, v:a.r.v||'', hersteller:a.hersteller,
       leistung:Math.round(a.r.w), deckung:Math.round(a.r.cover*100),
       modell:a.bez.modell, klartext:a.bez.klartext,
       bestellnr:a.bez.bestellnr||'– über Preisliste (Sondermaß) –',
@@ -2433,6 +2452,364 @@ function speichereRaum(){
   saveState();
   renderRaumliste();
   document.getElementById('raumname').value='';
+}
+
+/* ============================================================
+   ARTIKELSTAMM (optional)
+
+   Ordnet den vom Tool berechneten Bestellschluessel (z. B. FK0330518)
+   der Artikelnummer des Grosshandels und der EAN zu. Damit findet man
+   die Position in Hero zuverlaessig wieder.
+
+   WICHTIG: Diese Daten kommen aus der DATANORM des Grosshandels und
+   duerfen laut deren Vorlaufsatz nicht an Dritte weitergegeben werden.
+   Sie liegen deshalb NICHT im Repository, sondern werden einmal pro
+   Geraet ueber "Artikeldaten laden" eingelesen und im localStorage
+   gehalten. Preise und Rabattgruppen sind bewusst nicht enthalten.
+   ============================================================ */
+
+const ARTIKEL_KEY = 'lutzspring-artikelstamm';
+let ARTIKEL = null;          // {a:[[nr,ean,name],…], bn:{…}, dim:{…}}
+
+function artikelLaden(){
+  try{
+    const roh = localStorage.getItem(ARTIKEL_KEY);
+    if(roh){
+      const d = JSON.parse(roh);
+      ARTIKEL = (d && Array.isArray(d.a) && d.bn && d.dim) ? d : null;
+    }
+  }catch(e){ ARTIKEL = null; }
+  artikelStatus();
+}
+
+function artikelStatus(){
+  const el = document.getElementById('artikelLabel');
+  if(!el) return;
+  const n = ARTIKEL ? ARTIKEL.a.length : 0;
+  el.textContent = n ? `⤒ Artikeldaten: ${n.toLocaleString('de-DE')} Artikel` : '⤒ Artikeldaten laden';
+  el.title = n ? 'Zum Ersetzen erneut anklicken' : 'JSON mit Artikeldaten aus DATANORM laden';
+}
+
+function artikelImport(datei){
+  const leser = new FileReader();
+  leser.onload = function(){
+    try{
+      const d = JSON.parse(leser.result);
+      if(!d || !Array.isArray(d.a) || !d.bn || !d.dim) throw new Error('Format');
+      const n = d.a.length;
+      if(!n) throw new Error('leer');
+      localStorage.setItem(ARTIKEL_KEY, leser.result);
+      ARTIKEL = d;
+      artikelStatus();
+      alert(`${n.toLocaleString('de-DE')} Artikel geladen. Der GAEB-Export ergänzt ab sofort Artikelnummer und EAN.`);
+    }catch(e){
+      alert('Die Datei konnte nicht gelesen werden. Erwartet wird die mit dem DATANORM-Konverter erzeugte JSON-Datei.');
+    }
+  };
+  leser.readAsText(datei);
+}
+
+/* Nachschlagen: zuerst ueber die Masse (robust, unabhaengig vom
+   Nummernformat), ersatzweise ueber den Bestellschluessel. */
+function artikelFinden(h){
+  if(!ARTIKEL || !h) return null;
+  let i;
+  // 1. Massindex: Baureihe|Typ|Bauhoehe|Baulaenge[|li/re]
+  const serie = artikelSerie(h);
+  if(serie && h.typ != null && h.bh && h.bl){
+    let k = serie + '|' + parseInt(h.typ,10) + '|' + h.bh + '|' + h.bl;
+    if(ARTIKEL.dim[k] === undefined && (h.v === 'V')){
+      // Ventilausfuehrung: Seite anhaengen
+      const s = (h.anschluss === 'links') ? 'li' : 're';
+      if(ARTIKEL.dim[k + '|' + s] !== undefined) k = k + '|' + s;
+    }
+    i = ARTIKEL.dim[k];
+    if(i === undefined && h.v === 'V'){
+      i = ARTIKEL.dim[k + '|re'];
+      if(i === undefined) i = ARTIKEL.dim[k + '|li'];
+    }
+  }
+  // 2. Ersatzweise Bestellschluessel
+  if(i === undefined && h.bestellnr) i = ARTIKEL.bn[String(h.bestellnr).trim()];
+  if(i === undefined) return null;
+  const a = ARTIKEL.a[i];
+  return a ? {nr:a[0], ean:a[1], name:a[2]} : null;
+}
+
+/* Baureihenschluessel aus dem gespeicherten Modelltext ableiten. */
+function artikelSerie(h){
+  const m = String(h.modell||'');
+  if(/Verteo[- ]Profil/i.test(m)) return 'verteo-profil';
+  if(/Verteo[- ]Plan/i.test(m))   return 'verteo-plan';
+  if(/Profil-K/i.test(m)) return 'profil-k';
+  if(/Plan-K/i.test(m))   return 'plan-k';
+  if(/Profil-V/i.test(m)) return 'profil-v';
+  if(/Plan-V/i.test(m))   return 'plan-v';
+  return null;
+}
+
+/* ============================================================
+   GAEB-EXPORT (DA XML 3.2, Austauschphase 83 = Angebotsaufforderung)
+
+   Gliederung nach dem regulaeren Lutz-Spring-Angebot:
+     Pos. 1  Heizkoerper            -> Untergruppe je Raum
+     Pos. 2  Installationsmaterial  -> Konsolen/Blenden, ueber alle Raeume summiert
+     Pos. 3  Arbeits- und Serviceleistungen
+
+   Ohne Preise: Belegtyp 83 ist preislos, bepreist wird in Hero.
+   Die Struktur folgt einer verifizierten Beispieldatei — es duerfen
+   KEINE GAEB-Elemente erfunden werden, der Import prueft gegen ein XSD.
+   ============================================================ */
+
+function gaebEsc(t){
+  return String(t==null?'':t)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&apos;');
+}
+
+/* Artikelbezeichnung im Format des Grosshandels-Artikelstamms, z. B.
+   "KERMI X2 Profil-K Typ22 BH600x100x1200mm QN1999, weiß, 10 bar, m. Abdeckung"
+   Nur fuer Kermi therm-x2 belegt (dort gegen ein echtes Angebot geprueft);
+   sonst wird der Klartext des Tools verwendet. */
+function gaebBezeichnung(h){
+  const m = /therm-x2\s+([A-Za-zÄÖÜäöü]+-[KV])\s+Typ\s+(\d+)/.exec(h.modell||'');
+  if(m && h.qn && h.bt){
+    return `KERMI X2 ${m[1]} Typ${m[2]} BH${h.bh}x${h.bt}x${h.bl}mm QN${h.qn}, weiß, 10 bar, m. Abdeckung`;
+  }
+  return h.klartext || h.modell || 'Heizkörper';
+}
+
+/* Konsolen/Blenden ueber alle Raeume summieren.
+   ACHTUNG: Die Regeln sind eine bewusste Kopie aus addKonsole() im
+   Druckbericht (Set + 3. Konsole ab BL 1800, Standkonsole 2 oder 3 je HK,
+   Blende je Konsole, Ausgleichsstueck). Wird dort etwas geaendert,
+   muss es hier mitgezogen werden. */
+function gaebKonsolen(raeume){
+  const kons = {};
+  function add(k, menge){
+    if(!k || !k.verfuegbar) return;
+    if(k.art==='verteo'){
+      kons[k.artNr] = kons[k.artNr] || {artNr:k.artNr, bez:'Verteo Wandkonsolen-Set lang, weiß', anzahl:0};
+      kons[k.artNr].anzahl += menge;
+    } else if(k.art==='stand'){
+      kons[k.artNr] = kons[k.artNr] || {artNr:k.artNr, bez:'Standkonsole innenliegend, weiß', anzahl:0};
+      kons[k.artNr].anzahl += menge * (k.konsolen||2);
+      if(k.blende){
+        kons[k.blende] = kons[k.blende] || {artNr:k.blende, bez:'Fertigboden-Blende weiß (je Konsole)', anzahl:0};
+        kons[k.blende].anzahl += menge * (k.blendeAnzahl||k.konsolen||2);
+      }
+      if(k.ausgleich){
+        kons[k.ausgleich] = kons[k.ausgleich] || {artNr:k.ausgleich, bez:'Seitenausgleichsstück Typ 11 Ventil', anzahl:0};
+        kons[k.ausgleich].anzahl += menge;
+      }
+    } else {
+      kons[k.setNr] = kons[k.setNr] || {artNr:k.setNr, bez:'Schnellmontageset WA 30 mm weiß (2 Konsolen)', anzahl:0};
+      kons[k.setNr].anzahl += menge;
+      if(k.drei && k.dritteNr){
+        kons[k.dritteNr] = kons[k.dritteNr] || {artNr:k.dritteNr, bez:'3. Konsole (Einzelkonsole, ab BL 1800 mm)', anzahl:0};
+        kons[k.dritteNr].anzahl += menge;
+      }
+    }
+  }
+  raeume.forEach(r=>{
+    const arr = r.mehrfach ? r.hkliste : [{konsole:r.konsole, anzahl:1, istBestand:r.hk.istBestand}];
+    arr.forEach(h=>{
+      if(r.bestand || h.istBestand) return;      // Bestand bleibt -> keine Konsole
+      add(h.konsole !== undefined ? h.konsole : r.konsole, h.anzahl||1);
+    });
+  });
+  return Object.values(kons).sort((a,b)=>String(a.artNr).localeCompare(String(b.artNr)));
+}
+
+function gaebXml(){
+  const raeume = PROJEKT.raeume;
+  const jetzt = new Date();
+  const p2 = n => String(n).padStart(2,'0');
+  const datum = `${jetzt.getFullYear()}-${p2(jetzt.getMonth()+1)}-${p2(jetzt.getDate())}`;
+  const zeit  = `${p2(jetzt.getHours())}:${p2(jetzt.getMinutes())}:${p2(jetzt.getSeconds())}`;
+  const kunde = (PROJEKT.kunde||'').trim();
+  const projekt = kunde ? `Heizkörper-Austausch ${kunde}` : 'Heizkörper-Austausch';
+
+  let idn = 0;
+  const gid = () => `ID_${Math.floor(jetzt.getTime()/1000).toString(16)}_${String(++idn).padStart(3,'0')}`;
+
+  const x = [];
+  const item = (menge, einheit, kurz, langZeilen, rno, ind) => {
+    x.push(`${ind}<Item ID="${gid()}" RNoPart="${String(rno).padStart(3,'0')}">`);
+    x.push(`${ind}  <Qty>${menge}</Qty>`);
+    x.push(`${ind}  <QU>${gaebEsc(einheit)}</QU>`);
+    x.push(`${ind}  <Description>`);
+    x.push(`${ind}    <CompleteText>`);
+    x.push(`${ind}      <DetailTxt>`);
+    x.push(`${ind}        <Text>`);
+    langZeilen.forEach(z=>x.push(`${ind}          <p><span>${gaebEsc(z)}</span></p>`));
+    x.push(`${ind}        </Text>`);
+    x.push(`${ind}      </DetailTxt>`);
+    x.push(`${ind}      <OutlineText>`);
+    x.push(`${ind}        <TextOutlTxt><span>${gaebEsc(kurz)}</span></TextOutlTxt>`);
+    x.push(`${ind}      </OutlineText>`);
+    x.push(`${ind}    </CompleteText>`);
+    x.push(`${ind}  </Description>`);
+    x.push(`${ind}</Item>`);
+  };
+
+  x.push('<?xml version="1.0" encoding="UTF-8"?>');
+  x.push(`<GAEB xmlns="http://www.gaeb.de/GAEB_DA_XML/DA83/3.2">`);
+  x.push('  <GAEBInfo>');
+  x.push('    <Version>3.2</Version>');
+  x.push('    <VersDate>2013-10</VersDate>');
+  x.push(`    <Date>${datum}</Date>`);
+  x.push(`    <Time>${zeit}</Time>`);
+  x.push('    <ProgSystem>Lutz Spring GmbH – Heizkörper-Auslegung</ProgSystem>');
+  x.push('    <ProgName>heizkoerper.html</ProgName>');
+  x.push('  </GAEBInfo>');
+  x.push('  <PrjInfo>');
+  x.push(`    <NamePrj>${gaebEsc(projekt)}</NamePrj>`);
+  x.push(`    <LblPrj>${gaebEsc(kunde||'Heizkörper-Austausch')}</LblPrj>`);
+  x.push('    <Cur>EUR</Cur>');
+  x.push('    <CurLbl>Euro</CurLbl>');
+  x.push('  </PrjInfo>');
+  x.push('  <Award>');
+  x.push('    <DP>83</DP>');
+  x.push('    <AwardInfo>');
+  x.push('      <Cur>EUR</Cur>');
+  x.push('      <CurLbl>Euro</CurLbl>');
+  x.push('    </AwardInfo>');
+  x.push(`    <BoQ ID="${gid()}">`);
+  x.push('      <BoQInfo>');
+  x.push(`        <Name>${gaebEsc(projekt)}</Name>`);
+  x.push(`        <LblBoQ>${gaebEsc(kunde||'Heizkörper-Austausch')}</LblBoQ>`);
+  x.push(`        <Date>${datum}</Date>`);
+  x.push('      </BoQInfo>');
+  x.push('      <BoQBody>');
+
+  /* ---------- Pos. 1: Heizkoerper, Untergruppe je Raum ---------- */
+  x.push(`        <BoQCtgy ID="${gid()}" RNoPart="1">`);
+  x.push('          <LblTx>Heizkörper</LblTx>');
+  x.push('          <BoQBody>');
+  let rNr = 0;
+  raeume.forEach(r=>{
+    const arr = r.mehrfach ? r.hkliste : [{
+      modell:r.hk.modell, klartext:r.hk.klartext, bestellnr:r.hk.bestellnr,
+      bh:r.hk.bh, bl:r.hk.bl, bt:r.hk.bt, qn:r.hk.qn, anzahl:1,
+      leistung:r.hk.leistung, istBestand:r.hk.istBestand,
+      ausLager:r.hk.ausLager, lagerNotiz:r.hk.lagerNotiz
+    }];
+    const zuLiefern = arr.filter(h=>!(r.bestand || h.istBestand));
+    if(!zuLiefern.length) return;
+    rNr++;
+    x.push(`            <BoQCtgy ID="${gid()}" RNoPart="${rNr}">`);
+    x.push(`              <LblTx>${gaebEsc((r.etage?r.etage+' ':'')+r.name)}</LblTx>`);
+    x.push('              <BoQBody>');
+    x.push('                <Itemlist>');
+    zuLiefern.forEach((h,hi)=>{
+      const lang = [];
+      // Zeile 1 = Artikelbezeichnung im Format des Grosshandels-Artikelstamms.
+      // Muss ganz oben stehen: Hero zeigt den GAEB-Kurztext nicht an, sichtbar
+      // ist nur der Langtext — und damit wird im Artikelstamm gesucht.
+      // Wenn die Artikeldaten geladen sind, wird der ECHTE Name verwendet
+      // (die berechnete Bezeichnung stimmt nicht bei jeder Baureihe:
+      //  Typ 33 heisst "KERMI X2 Profil-K …", Typ 10 nur "KERMI Profil-K …").
+      const stamm = artikelFinden(h);
+      lang.push(stamm ? stamm.name : gaebBezeichnung(h));
+      if(stamm){
+        lang.push(`Artikelnummer Großhandel: ${stamm.nr}`);
+        lang.push(`EAN: ${stamm.ean}`);
+      }
+      if(h.klartext) lang.push(h.klartext);
+      // Kermi-Bestellschluessel, NICHT die Grosshandelsnummer. Wiedemanns
+      // DATANORM liefert das Feld "Hersteller-Nr." leer, danach laesst sich
+      // im Artikelstamm also nicht suchen — nur bei Kermi direkt bestellen.
+      if(h.bestellnr) lang.push(`Kermi-Bestellschlüssel: ${h.bestellnr}`);
+      if(h.qn) lang.push(`Normwärmeleistung 75/65/20: ${h.qn} W`);
+      const einzel = h.leistung || h.leistungGesamt;
+      if(einzel) lang.push(`Leistung bei ${r.tv}/${r.tr}/${r.tl} °C: ${einzel} W`);
+      lang.push(`Heizlast des Raumes: ${r.heizlast} W (mit Reserve ${r.bedarf} W)`);
+      if(h.ausLager) lang.push(`Aus Lagerbestand${h.lagerNotiz?': '+h.lagerNotiz:''}`);
+      lang.push('Liefern, montieren und betriebsfertig anschließen.');
+      if(r.notiz){ lang.push(''); lang.push(r.notiz); }   // Untertemperatur-Hinweis
+      item(h.anzahl||1, 'Stk', stamm ? stamm.name : gaebBezeichnung(h),
+           lang.filter(z=>z!==undefined), hi+1, '                  ');
+    });
+    x.push('                </Itemlist>');
+    x.push('              </BoQBody>');
+    x.push('            </BoQCtgy>');
+  });
+  x.push('          </BoQBody>');
+  x.push('        </BoQCtgy>');
+
+  /* ---------- Pos. 2: Installationsmaterial ---------- */
+  const kons = gaebKonsolen(raeume);
+  if(kons.length){
+    x.push(`        <BoQCtgy ID="${gid()}" RNoPart="2">`);
+    x.push('          <LblTx>Installationsmaterial</LblTx>');
+    x.push('          <BoQBody>');
+    x.push('            <Itemlist>');
+    kons.forEach((k,i)=>{
+      item(k.anzahl, 'Stk', `${k.bez} (${k.artNr})`,
+           [k.bez, `Artikelnummer: ${k.artNr}`, 'Menge über alle Räume summiert.'],
+           i+1, '              ');
+    });
+    x.push('            </Itemlist>');
+    x.push('          </BoQBody>');
+    x.push('        </BoQCtgy>');
+  }
+
+  /* ---------- Pos. 3: Arbeits- und Serviceleistungen ---------- */
+  const minJeHk = parseFloat((document.getElementById('gaebMinuten')||{}).value);
+  const hkAnzahl = raeume.reduce((s,r)=>{
+    const arr = r.mehrfach ? r.hkliste : [{anzahl:1, istBestand:r.hk.istBestand}];
+    return s + arr.reduce((t,h)=>t + ((r.bestand||h.istBestand)?0:(h.anzahl||1)), 0);
+  }, 0);
+  x.push(`        <BoQCtgy ID="${gid()}" RNoPart="3">`);
+  x.push('          <LblTx>Arbeits- und Serviceleistungen</LblTx>');
+  x.push('          <BoQBody>');
+  x.push('            <Itemlist>');
+  let aNr = 0;
+  item(1, 'psch', 'Entsorgungspauschale Heizkörper (Bedarfsposition)',
+       ['Demontage und fachgerechte Entsorgung der Altheizkörper',
+        'einschließlich Transport und Entsorgungsnachweis.',
+        'BEDARFSPOSITION – wird nur bei Beauftragung berechnet.'],
+       ++aNr, '              ');
+  item(1, 'psch', 'Auftragspauschale',
+       ['Für Einsatzplanung, Koordination sowie interne Vor- und Nachbereitung.'],
+       ++aNr, '              ');
+  if(isFinite(minJeHk) && minJeHk > 0 && hkAnzahl > 0){
+    item(Math.round(minJeHk*hkAnzahl), 'Min', 'Arbeitszeit Monteur',
+         ['Demontage der Altheizkörper, Montage der neuen Heizflächen,',
+          'Anschluss, Befüllen, Entlüften und Funktionsprüfung.',
+          `Ansatz: ${minJeHk} Min. je Heizkörper × ${hkAnzahl} Heizkörper.`],
+         ++aNr, '              ');
+  }
+  x.push('            </Itemlist>');
+  x.push('          </BoQBody>');
+  x.push('        </BoQCtgy>');
+
+  x.push('      </BoQBody>');
+  x.push('    </BoQ>');
+  x.push('  </Award>');
+  x.push('</GAEB>');
+  return x.join('\n');
+}
+
+function gaebHerunterladen(){
+  if(!PROJEKT.raeume.length){
+    alert('Es ist noch kein Raum gespeichert. Bitte zuerst Räume anlegen („+ Raum speichern“).');
+    return;
+  }
+  const xml = gaebXml();
+  // Selbstkontrolle: wohlgeformtes XML?
+  if(new DOMParser().parseFromString(xml,'application/xml').getElementsByTagName('parsererror').length){
+    alert('Die GAEB-Datei konnte nicht erzeugt werden (XML-Fehler).');
+    return;
+  }
+  const name = ((PROJEKT.kunde||'Heizkoerper').replace(/[^\wäöüÄÖÜß -]/g,'').trim() || 'Heizkoerper');
+  const blob = new Blob([xml], {type:'application/xml'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = name + '.X83';
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
 }
 
 function loescheRaum(idx){
@@ -2850,6 +3227,12 @@ function projektImport(file){
   reader.readAsText(file);
 }
 
+document.getElementById('gaebExport').addEventListener('click', gaebHerunterladen);
+document.getElementById('artikelDatei').addEventListener('change', function(){
+  if(this.files && this.files[0]) artikelImport(this.files[0]);
+  this.value='';
+});
+artikelLaden();
 document.getElementById('projektExport').addEventListener('click',projektExport);
 document.getElementById('projektImportFile').addEventListener('change',e=>{
   if(e.target.files&&e.target.files[0]) projektImport(e.target.files[0]);
