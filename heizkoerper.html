@@ -60,6 +60,7 @@
   .checkgroup label{display:flex;align-items:center;gap:6px;margin:0;font-weight:600;color:var(--text);cursor:pointer}
   .checkgroup input{width:auto}
   .summary{background:linear-gradient(135deg,var(--navy),var(--navy-light));color:var(--text-on-dark);border-radius:12px;padding:18px 20px;margin-bottom:18px}
+  .flaeche-hinweis{background:var(--overlay-white-15);border:1px solid var(--overlay-white-30);border-radius:7px;padding:8px 11px;margin:10px 0 2px;font-size:12.5px;line-height:1.45;color:var(--text-on-dark)}
   .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:14px;margin-top:12px}
   .summary-item .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.5px;opacity:.7}
   .summary-item .val{font-size:20px;font-weight:700;margin-top:2px}
@@ -102,6 +103,7 @@
   .kons-btn.active{background:var(--brand-yellow);color:var(--on-yellow);border-color:var(--brand-yellow)}
   .kons-inhalt{font-size:12.5px}
   .bez-lager{margin-top:10px;background:var(--lager-overlay-bg);border:1px solid var(--lager-overlay-border);border-radius:7px;padding:7px 11px;font-size:12.5px;color:var(--text-on-dark)}
+  .bez-bestand-kons{margin-left:18px;margin-top:6px;font-size:12px;opacity:.92}
   .bez-bestand{margin-top:10px;display:flex;align-items:flex-start;gap:8px;background:var(--bestand-overlay-bg);border:1px solid var(--bestand-overlay-border);border-radius:7px;padding:8px 11px;font-size:12.5px;color:var(--text-on-dark);cursor:pointer}
   .bez-bestand input{margin-top:2px;flex-shrink:0}
   .bez-add-btn{margin-top:12px;width:100%;padding:11px;background:var(--green);color:var(--text-on-dark);border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit}
@@ -1223,6 +1225,25 @@ document.querySelectorAll('.hkmode-tab').forEach(t=>{
 });
 
 /* ---------- Eingaben lesen ---------- */
+/* Grenze fuer die Installationsflaeche. Leeres oder ungueltiges Feld
+   bedeutet "unbegrenzt" — dargestellt durch einen Wert, der jede reale
+   Baugroesse uebersteigt. */
+const FLAECHE_UNBEGRENZT = 99999;
+function flaecheGrenze(id){
+  const roh = document.getElementById(id).value.trim();
+  if(roh === '') return FLAECHE_UNBEGRENZT;
+  const v = parseFloat(roh);
+  return (isFinite(v) && v > 0) ? v : FLAECHE_UNBEGRENZT;
+}
+
+/* Anzeigetext fuer die Flaechengrenze — "unbegrenzt" statt 99999 mm. */
+function flaecheTxt(i){
+  const h = i.maxHFrei ? 'unbegrenzt' : i.maxH;
+  const l = i.maxLFrei ? 'unbegrenzt' : i.maxL;
+  if(i.maxHFrei && i.maxLFrei) return 'ohne Begrenzung';
+  return h + '\u00d7' + l + ' mm';
+}
+
 function getInputs(){
   const typen = [...document.querySelectorAll('#typefilter input:checked')].map(c=>c.value);
   const ausf = document.querySelector('input[name=ausf]:checked').value;
@@ -1232,8 +1253,13 @@ function getInputs(){
     tl:+document.getElementById('raumtemp').value,
     ta:+document.getElementById('taussen').value,
     tv:+tv_.value, tr:+tr_.value,
-    maxH:+document.getElementById('maxH').value,
-    maxL:+document.getElementById('maxL').value,
+    // Leeres Feld = keine Begrenzung. Frueher wurde daraus 0 und es passte
+    // nichts mehr hinein; die Meldung "0x0 mm" war fachlich richtig, aber
+    // irrefuehrend fuer jemanden, der das Feld nur nicht ausgefuellt hat.
+    maxH: flaecheGrenze('maxH'),
+    maxL: flaecheGrenze('maxL'),
+    maxHFrei: document.getElementById('maxH').value.trim()==='',
+    maxLFrei: document.getElementById('maxL').value.trim()==='',
     typen, ausf,
     anschluss:(document.querySelector('input[name=anschluss]:checked')||{}).value||'rechts',
     bestand:document.getElementById('bestand').value,
@@ -1364,7 +1390,7 @@ function runFit(){
   ).map(p=>{
     const passtFlaeche = Number(p.bh)<=i.maxH+FLAECHEN_TOLERANZ && Number(p.bl)<=i.maxL+FLAECHEN_TOLERANZ;
     let grund;
-    if(!passtFlaeche) grund = `passt nicht in die Fläche (max. ${i.maxH}×${i.maxL} mm)`;
+    if(!passtFlaeche) grund = `passt nicht in die Fläche (max. ${flaecheTxt(i)})`;
     else {
       const w = leistung(p.typ, Number(p.bh), Number(p.bl), i.tv, i.tr, i.tl);
       grund = (w!=null && w<bedarf) ? `deckt die Heizlast nicht (${Math.round(w)} W < ${Math.round(bedarf)} W)` : 'nicht passend';
@@ -1419,7 +1445,7 @@ function renderFit(list,i,bedarf,lagerNichtNutzbar){
     }
     html += `<div class="card"><div class="warnbox">
       <b>Kein Heizkörper</b> deckt bei ${i.tv}/${i.tr} °C die Heizlast innerhalb der Fläche
-      ${i.maxH}×${i.maxL} mm. Wechsle zu Tab ② um die nötige Systemtemperatur zu ermitteln,
+      ${flaecheTxt(i)}. Wechsle zu Tab ② um die nötige Systemtemperatur zu ermitteln,
       oder vergrößere die Installationsfläche.
     </div>${leerLager}</div>`;
     el.innerHTML=html; return;
@@ -1560,7 +1586,7 @@ function hkKorbAdd(){
   const ausLager = !!a.lager;
   // Konsole: Kermi therm-x2 (Wand oder Stand) ODER Verteo — aber NICHT bei Bestand (bleibt hängen)
   let konsole=null;
-  if(!istBestand){
+  if(!istBestand || a.bestandKonsole){
     if(a.hersteller==='kermi'){
       konsole = (a.konsolenArt==='stand')
         ? kermiStandkonsole(a.r.bh, a.r.bl, a.r.typ, a.r.v)
@@ -1650,7 +1676,7 @@ function zeigeBezeichnung(idx){
   const w = (r.w!=null)? r.w : leistung(r.typ,r.bh,r.bl,i.tv,i.tr,i.tl);
   const cover = (r.cover!=null)? r.cover : (w!=null? w/i.heizlast : null);
   const b=db.bezeichnung(r.typ,r.bh,r.bl,r.v||'', i.anschluss);
-  AKTUELLE_AUSWAHL = {r:{...r, w, cover}, bez:b, hersteller:HERSTELLER, dbName:db.name, lager:r.lager||null, istBestand:false, konsolenArt:'wand'};
+  AKTUELLE_AUSWAHL = {r:{...r, w, cover}, bez:b, hersteller:HERSTELLER, dbName:db.name, lager:r.lager||null, istBestand:false, konsolenArt:'wand', bestandKonsole:false};
   const panel=document.getElementById('bezPanel');
   if(!panel) return;
   const nrHtml = b.bestellnr
@@ -1671,7 +1697,8 @@ function zeigeBezeichnung(idx){
   const lagerHinweisPanel = AKTUELLE_AUSWAHL.lager
     ? `<div class="bez-lager">📦 Dieser Heizkörper liegt im <b>Lager</b>${AKTUELLE_AUSWAHL.lager.notiz?' ('+AKTUELLE_AUSWAHL.lager.notiz+')':''} – wird als Lagerware gekennzeichnet.</div>`
     : '';
-  const bestandToggle = `<label class="bez-bestand"><input type="checkbox" id="bestandCheck" ${AKTUELLE_AUSWAHL.istBestand?'checked':''} onchange="toggleBestand(this.checked)"> <span>Bestandsheizkörper – bleibt hängen, wird <b>nicht getauscht</b> (keine Konsolen nötig)</span></label>`;
+  const bestandToggle = `<label class="bez-bestand"><input type="checkbox" id="bestandCheck" ${AKTUELLE_AUSWAHL.istBestand?'checked':''} onchange="toggleBestand(this.checked)"> <span>Bestandsheizkörper – bleibt hängen, wird <b>nicht getauscht</b></span></label>
+    <label class="bez-bestand bez-bestand-kons" id="bestandKonsWrap" style="display:${AKTUELLE_AUSWAHL.istBestand?'flex':'none'}"><input type="checkbox" id="bestandKonsCheck" ${AKTUELLE_AUSWAHL.bestandKonsole?'checked':''} onchange="toggleBestandKonsole(this.checked)"> <span>Halter trotzdem nötig – Konsolen oben mit einplanen</span></label>`;
   const hinweisHtml = HK_MODE==='multi'
     ? `<button class="bez-add-btn" onclick="hkKorbAdd()">+ diesen Heizkörper zum Raum hinzufügen</button>`
     : `<div class="bez-detail">${b.detail} · Leistung ${w!=null?Math.round(w):'–'} W bei aktuellen Bedingungen · <b>jetzt „+ Raum speichern“ klicken</b></div>`;
@@ -1691,9 +1718,34 @@ function zeigeBezeichnung(idx){
   document.querySelectorAll('.clickrow').forEach(tr=>tr.classList.toggle('active-row', +tr.dataset.idx===idx));
 }
 
-// Bestand-Schalter im Panel: HK bleibt hängen, wird nicht getauscht, braucht keine Konsolen
+// Bestand-Schalter im Panel: HK bleibt haengen und wird nicht getauscht.
+// Konsolen entfallen dann standardmaessig — koennen aber einzeln wieder
+// zugeschaltet werden, weil beim Bestand mal Halter gebraucht werden und mal nicht.
 function toggleBestand(checked){
-  if(AKTUELLE_AUSWAHL) AKTUELLE_AUSWAHL.istBestand = !!checked;
+  if(!AKTUELLE_AUSWAHL) return;
+  AKTUELLE_AUSWAHL.istBestand = !!checked;
+  if(!checked) AKTUELLE_AUSWAHL.bestandKonsole = false;
+  const wrap=document.getElementById('bestandKonsWrap');
+  if(wrap) wrap.style.display = checked ? 'flex' : 'none';
+  const box=document.getElementById('bestandKonsCheck');
+  if(box && !checked) box.checked = false;
+  konsolenPanelSichtbarkeit();
+}
+
+// Halter trotzdem noetig?
+function toggleBestandKonsole(checked){
+  if(!AKTUELLE_AUSWAHL) return;
+  AKTUELLE_AUSWAHL.bestandKonsole = !!checked;
+  konsolenPanelSichtbarkeit();
+}
+
+// Konsolenauswahl ausgrauen, wenn sie fuer diesen HK nicht gebraucht wird
+function konsolenPanelSichtbarkeit(){
+  const p=document.getElementById('konsPanel');
+  if(!p || !AKTUELLE_AUSWAHL) return;
+  const aus = AKTUELLE_AUSWAHL.istBestand && !AKTUELLE_AUSWAHL.bestandKonsole;
+  p.style.opacity = aus ? '.4' : '';
+  p.style.pointerEvents = aus ? 'none' : '';
 }
 
 // Konsolen-Panel für Kermi therm-x2 mit Wand/Stand-Umschalter
@@ -1951,7 +2003,7 @@ function renderTemp(list,i,bedarf,spreizung){
 
   html += `<div class="card">
     <h2>Nötige Systemtemperatur <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);font-size:12px">Spreizung ${spreizung} K · jede Baugröße in der Fläche</span></h2>
-    <div class="warnbox">Für <b>jeden Heizkörper</b>, der in ${i.maxH}×${i.maxL} mm passt, wird die
+    <div class="warnbox">Für <b>jeden Heizkörper</b>, der in ${flaecheTxt(i)} passt, wird die
       Vorlauftemperatur ermittelt, bei der er ${Math.round(bedarf)} W (Heizlast + ${i.reserve}%) liefert –
       bei gleichbleibender Spreizung von <b>${spreizung} K</b> (aus VL/RL). Raumtemp. ${i.tl} °C.</div>
     <div id="bezPanel"></div>
@@ -2124,8 +2176,8 @@ function renderRoom(list,i){
   }).join('');
 
   html += `<div class="card">
-    <h2>Erreichbare Raumtemperatur <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);font-size:12px">größter HK je Bauhöhe in ${i.maxH}×${i.maxL} mm</span></h2>
-    <div class="warnbox">Wenn der Heizkörper <b>maximal ${i.maxH}×${i.maxL} mm</b> groß sein darf und die Anlage mit
+    <h2>Erreichbare Raumtemperatur <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);font-size:12px">größter HK je Bauhöhe in ${flaecheTxt(i)}</span></h2>
+    <div class="warnbox">Wenn der Heizkörper <b>maximal ${flaecheTxt(i)}</b> groß sein darf und die Anlage mit
       <b>${i.tv}/${i.tr} °C</b> fährt: welche Raumtemperatur stellt sich im Beharrungszustand ein?
       Berücksichtigt, dass die Heizlast bei ${i.ta} °C Außentemperatur mit der Raumtemperatur mitwächst.
       Wunschtemperatur: <b>${i.tl} °C</b>.</div>
@@ -2155,7 +2207,18 @@ function renderRoom(list,i){
 /* ---------- gemeinsame Zusammenfassung ---------- */
 function summaryHTML(i,bedarf){
   const dt=dTlog(i.tv,i.tr,i.tl);
-  return `<div class="summary">
+  // Hinweis, wenn ohne Flaechenbegrenzung gerechnet wird — sonst wundert man
+  // sich ueber Vorschlaege, die vor Ort gar nicht an die Wand passen.
+  const ohneGrenze = (i.maxHFrei || i.maxLFrei) ? `
+    <div class="flaeche-hinweis">
+      ${i.maxHFrei && i.maxLFrei
+        ? 'Es ist <b>keine maximale Installationsfläche</b> vorgegeben — gerechnet wird ohne Begrenzung in Höhe und Länge.'
+        : (i.maxHFrei
+            ? 'Es ist <b>keine maximale Bauhöhe</b> vorgegeben — nur die Baulänge ist begrenzt.'
+            : 'Es ist <b>keine maximale Baulänge</b> vorgegeben — nur die Bauhöhe ist begrenzt.')}
+      Vor Ort prüfen, ob der Vorschlag an die Wand passt.
+    </div>` : '';
+  return `<div class="summary">${ohneGrenze}
     <div style="font-size:12px;text-transform:uppercase;letter-spacing:.6px;opacity:.75">Auslegungsbasis</div>
     <div class="summary-grid">
       <div class="summary-item"><div class="lbl">Heizlast</div><div class="val">${i.heizlast}<small> W</small></div></div>
@@ -2163,7 +2226,7 @@ function summaryHTML(i,bedarf){
       <div class="summary-item"><div class="lbl">Raumtemp.</div><div class="val">${i.tl}<small> °C</small></div></div>
       <div class="summary-item"><div class="lbl">System</div><div class="val">${i.tv}/${i.tr}<small> °C</small></div></div>
       <div class="summary-item"><div class="lbl">ΔT log</div><div class="val">${dt.toFixed(1)}<small> K</small></div></div>
-      <div class="summary-item"><div class="lbl">Max. Fläche</div><div class="val" style="font-size:16px">${i.maxH}×${i.maxL}<small> mm</small></div></div>
+      <div class="summary-item"><div class="lbl">Max. Fläche</div><div class="val" style="font-size:16px">${(i.maxHFrei&&i.maxLFrei)?'ohne':flaecheTxt(i).replace(' mm','')}<small>${(i.maxHFrei&&i.maxLFrei)?' Begrenzung':' mm'}</small></div></div>
     </div>
   </div>`;
 }
@@ -2410,7 +2473,8 @@ function speichereRaum(){
   const er=erreichbareRaumtemp(a.r.typ,a.r.bh,a.r.bl,i);
   const typLabelStr=DB().typLabel(a.r.typ);
   let konsole=null;
-  if(!istBestandS){
+  // Bestand bekommt nur dann Konsolen, wenn sie ausdruecklich angehakt wurden.
+  if(!istBestandS || a.bestandKonsole){
     if(a.hersteller==='kermi'){
       konsole = (a.konsolenArt==='stand')
         ? kermiStandkonsole(a.r.bh, a.r.bl, a.r.typ, a.r.v)
@@ -2579,42 +2643,49 @@ function gaebBezeichnung(h){
   return h.klartext || h.modell || 'Heizkörper';
 }
 
-/* Konsolen/Blenden ueber alle Raeume summieren.
-   ACHTUNG: Die Regeln sind eine bewusste Kopie aus addKonsole() im
-   Druckbericht (Set + 3. Konsole ab BL 1800, Standkonsole 2 oder 3 je HK,
-   Blende je Konsole, Ausgleichsstueck). Wird dort etwas geaendert,
-   muss es hier mitgezogen werden. */
+/* ============================================================
+   KONSOLENREGELN — EINZIGE STELLE
+
+   Fruehere Fassung hatte diese Regeln doppelt: einmal im Druckbericht,
+   einmal im GAEB-Export. Beide Kopien waren logisch identisch, konnten
+   aber auseinanderdriften. Jetzt rechnen beide Wege hierueber.
+
+   Regeln:
+     therm-x2 Wand : Schnellmontageset je HK, 3. Konsole ab BL 1800 mm
+     Standkonsole  : 2 oder 3 je HK, dazu je Konsole eine Blende,
+                     bei Typ 11 Ventil zusaetzlich ein Ausgleichsstueck
+     Verteo        : Wandkonsolen-Set lang
+   ============================================================ */
+function konsoleAddieren(ziel, k, menge){
+  if(!k || !k.verfuegbar) return;
+  function nimm(nr, bez, anz){
+    if(!nr) return;
+    ziel[nr] = ziel[nr] || {artNr:nr, bez:bez, anzahl:0};
+    ziel[nr].anzahl += anz;
+  }
+  if(k.art==='verteo'){
+    nimm(k.artNr, 'Verteo Wandkonsolen-Set lang, weiß', menge);
+  } else if(k.art==='stand'){
+    const anzKons = k.konsolen || 2;
+    nimm(k.artNr, 'Standkonsole innenliegend, weiß', menge * anzKons);
+    nimm(k.blende, 'Fertigboden-Blende weiß (je Konsole)', menge * (k.blendeAnzahl || anzKons));
+    nimm(k.ausgleich, 'Seitenausgleichsstück Typ 11 Ventil', menge);
+  } else {
+    nimm(k.setNr, 'Schnellmontageset WA 30 mm weiß (2 Konsolen)', menge);
+    if(k.drei) nimm(k.dritteNr, '3. Konsole (Einzelkonsole, ab BL 1800 mm)', menge);
+  }
+}
+
+/* Konsolen/Blenden ueber alle Raeume summieren (GAEB-Export). */
 function gaebKonsolen(raeume){
   const kons = {};
-  function add(k, menge){
-    if(!k || !k.verfuegbar) return;
-    if(k.art==='verteo'){
-      kons[k.artNr] = kons[k.artNr] || {artNr:k.artNr, bez:'Verteo Wandkonsolen-Set lang, weiß', anzahl:0};
-      kons[k.artNr].anzahl += menge;
-    } else if(k.art==='stand'){
-      kons[k.artNr] = kons[k.artNr] || {artNr:k.artNr, bez:'Standkonsole innenliegend, weiß', anzahl:0};
-      kons[k.artNr].anzahl += menge * (k.konsolen||2);
-      if(k.blende){
-        kons[k.blende] = kons[k.blende] || {artNr:k.blende, bez:'Fertigboden-Blende weiß (je Konsole)', anzahl:0};
-        kons[k.blende].anzahl += menge * (k.blendeAnzahl||k.konsolen||2);
-      }
-      if(k.ausgleich){
-        kons[k.ausgleich] = kons[k.ausgleich] || {artNr:k.ausgleich, bez:'Seitenausgleichsstück Typ 11 Ventil', anzahl:0};
-        kons[k.ausgleich].anzahl += menge;
-      }
-    } else {
-      kons[k.setNr] = kons[k.setNr] || {artNr:k.setNr, bez:'Schnellmontageset WA 30 mm weiß (2 Konsolen)', anzahl:0};
-      kons[k.setNr].anzahl += menge;
-      if(k.drei && k.dritteNr){
-        kons[k.dritteNr] = kons[k.dritteNr] || {artNr:k.dritteNr, bez:'3. Konsole (Einzelkonsole, ab BL 1800 mm)', anzahl:0};
-        kons[k.dritteNr].anzahl += menge;
-      }
-    }
-  }
+  const add = (k, menge) => konsoleAddieren(kons, k, menge);
   raeume.forEach(r=>{
     const arr = r.mehrfach ? r.hkliste : [{konsole:r.konsole, anzahl:1, istBestand:r.hk.istBestand}];
     arr.forEach(h=>{
-      if(r.bestand || h.istBestand) return;      // Bestand bleibt -> keine Konsole
+      if(r.bestand) return;   // ganzer Raum bleibt Bestand -> nichts bestellen
+      // Ob ein Bestands-HK Konsolen bekommt, wurde beim Speichern entschieden:
+      // ohne Halterbedarf ist konsole = null und konsoleAddieren() tut nichts.
       add(h.konsole !== undefined ? h.konsole : r.konsole, h.anzahl||1);
     });
   });
@@ -3014,40 +3085,8 @@ function druckeBericht(){
   const bestandHK = {};   // dito für Bestand (ganzer Raum ODER einzelner HK)
   const bestellKons = {}; // artNr -> {artNr, bez, anzahl}
 
-  function addKonsole(k, menge){
-    if(!k || !k.verfuegbar) return;
-    if(k.art==='verteo'){
-      const key=k.artNr;
-      bestellKons[key] = bestellKons[key] || {artNr:key, bez:'Verteo Wandkonsolen-Set lang, weiß', anzahl:0};
-      bestellKons[key].anzahl += menge;
-    } else if(k.art==='stand'){
-      // Standkonsole: benötigte Anzahl = k.konsolen (2 oder 3) je HK
-      const key=k.artNr;
-      bestellKons[key] = bestellKons[key] || {artNr:key, bez:'Standkonsole innenliegend, weiß', anzahl:0};
-      bestellKons[key].anzahl += menge * (k.konsolen||2);
-      // Fertigboden-Blende: 1 je Standkonsole
-      if(k.blende){
-        const bl=k.blende;
-        bestellKons[bl] = bestellKons[bl] || {artNr:bl, bez:'Fertigboden-Blende weiß (je Konsole)', anzahl:0};
-        bestellKons[bl].anzahl += menge * (k.blendeAnzahl||k.konsolen||2);
-      }
-      if(k.ausgleich){
-        const a=k.ausgleich;
-        bestellKons[a] = bestellKons[a] || {artNr:a, bez:'Seitenausgleichsstück Typ 11 Ventil', anzahl:0};
-        bestellKons[a].anzahl += menge;
-      }
-    } else {
-      // therm-x2 Wand: Set immer, 3. Konsole zusätzlich ab BL 1800
-      const s=k.setNr;
-      bestellKons[s] = bestellKons[s] || {artNr:s, bez:'Schnellmontageset WA 30 mm weiß (2 Konsolen)', anzahl:0};
-      bestellKons[s].anzahl += menge;
-      if(k.drei && k.dritteNr){
-        const d=k.dritteNr;
-        bestellKons[d] = bestellKons[d] || {artNr:d, bez:'3. Konsole (Einzelkonsole, ab BL 1800 mm)', anzahl:0};
-        bestellKons[d].anzahl += menge;
-      }
-    }
-  }
+  // Regeln stehen in konsoleAddieren() — eine Stelle fuer Bericht und GAEB.
+  function addKonsole(k, menge){ konsoleAddieren(bestellKons, k, menge); }
 
   PROJEKT.raeume.forEach(r=>{
     const raumLabel = (r.etage?r.etage+' · ':'')+r.name;
@@ -3066,8 +3105,9 @@ function druckeBericht(){
                                 bh:h.bh, bl:h.bl, anzahl:0, raeume:[], ausLager:!!h.ausLager, lagerNotiz:h.lagerNotiz||''};
       ziel[key].anzahl += anz;
       if(!ziel[key].raeume.includes(raumLabel)) ziel[key].raeume.push(raumLabel);
-      // Konsolen nur für zu bestellende HK (weder Bestand noch – bei Lager – bereits vorhanden)
-      if(!istBestand) addKonsole(h.konsole, anz);
+      // Konsolen: die Entscheidung steckt im Konsolen-Objekt (siehe speichereRaum).
+      // Bestands-HK ohne Halterbedarf fuehren konsole = null.
+      if(!r.bestand) addKonsole(h.konsole, anz);
     });
   });
 
