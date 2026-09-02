@@ -10,6 +10,7 @@ statische Seite über GitHub Pages, ohne Build-Schritt und ohne Backend.
 | `index.html` | Landingpage | Einstiegsseite mit Kacheln zu allen Tools |
 | `auslegung.html` | Wärmepumpenauslegung | Heizlast- und WP-Auslegungsrechner |
 | `heizkoerper.html` | Heizkörperdimensionierung | Heizkörperauslegung, gleicht gegen Lagerbestand ab |
+| `foerderung.html` | Förderungsrechner | KfW-Zuschuss (BEG EM) überschlagen, mit Fristen |
 | `kostenvergleich.html` | Kostenvergleich | Wirtschaftlichkeitsvergleich Heizsysteme |
 | `bestandsaufnahme.html` | Lagerbestand | Erfassung/Ansicht des Heizkörperlagers |
 | `bad-angebot.html` | Bestandsaufnahme Bad | Bauvorhaben, Sanitärobjekte und Ausführungen aufnehmen; exportiert GAEB X83 für Hero |
@@ -233,6 +234,56 @@ Noch offen: Bedarfspositionen lassen sich in Hero je Position ankreuzen;
 ob GAEB sie mitliefern kann, ist nicht verifiziert. `auslegung.html` hat
 noch keinen GAEB-Export. Arbonia und Zehnder liefern keinen Bestellschlüssel
 und sind in der Artikeltabelle nicht abgedeckt.
+
+## Förderungsrechner (`foerderung.html`)
+
+Zeigt dem Kunden per Schieberegler, welchen KfW-Zuschuss er erwarten kann.
+Kein Antragsersatz — verbindlich ist der Förderbescheid.
+
+**Quellen** (im Code als Kommentar hinterlegt): KfW-Merkblatt 458 „BEG
+Heizungsförderung für Privatpersonen – Wohngebäude", Stand 07/2026, gültig
+ab 21.07.2026 · IKZ 8/2026, Tabelle 1.
+
+**Rechenmodell** — je Wohneinheit, nicht je Gebäude:
+
+    Förderhöchstbetrag = 28.000 (1. WE)
+                       + 15.000 × (WE 2–6)
+                       +  8.000 × (WE ab 7)
+    förderfähig  = min(Kosten, Förderhöchstbetrag)
+    Anteil je WE = förderfähig / Anzahl WE
+    selbstgenutzte WE = min(Grund + Klima + Einkommen, Deckel) × Anteil
+    übrige WE         = Grundförderung × Anteil
+
+Gegen alle Spalten der IKZ-Tabelle nachgerechnet: EFH 2026 → 22.400 /
+19.600 / 15.680 / 12.880 €, 2 WE → 23.650 €, 3 WE → 27.067 €, 8 WE ohne
+Selbstnutzung → 35.700 €.
+
+Vier Punkte, die beim Ändern leicht schiefgehen:
+
+- **Der Deckel ist 70 %, nicht 80 %.** 80 % gelten nur für selbstnutzende
+  Eigentümer mit zvE bis 30.000 € (bzw. bis 40.000 € anzusetzend mit
+  Familienzuschlag). Die 80-Prozent-Grenze fällt genau mit dem
+  40-Prozent-Einkommensbonus zusammen — deshalb `obergrenze(bonus)`.
+- **Der Familienzuschlag mindert das Einkommen um 10.000 €**, er erhöht
+  nicht den Bonus. Die Infografik des BWP stellt das andersherum dar.
+- **Maßgeblich ist der Tag der Antragstellung**, nicht der Einbau. Klima-
+  geschwindigkeitsbonus (16 %, ab 01.02.2027 halbjährlich −4 Punkte, ab
+  01.08.2028 entfallen) und Höchstbetrag der 1. WE (−750 € je Halbjahr bis
+  22.000 € ab 01.08.2030) hängen allein daran. Beides in `stufen(d)`.
+- **Zwei Regeln sind angekündigt, nicht im Merkblatt.** Die Aufteilung der
+  Grundförderung ab 01.01.2027 in 15 % + 15 % „made in EU" steckt allein in
+  `grundsatz()`, der Wegfall der Förderung für EE-Anlagen ab Baujahr 2008
+  allein im Hinweiskasten. Beide sind bewusst an je einer Stelle gekapselt
+  und als angekündigt gekennzeichnet.
+
+**Erklärtexte.** Hinter jedem Schritt steht ein Kasten, der aus dem
+tatsächlichen Ergebnis erzeugt wird (`erklaerung1()` … `erklaerung4()`) —
+nicht aus vorformulierten Bausteinen. Ändert sich eine Regel, muss der
+zugehörige Text mitgezogen werden, sonst erklärt er eine andere Rechnung
+als die angezeigte.
+
+Der Rechenkern ist frei von DOM-Zugriffen (`var HB_1WE_START` bis
+`/* Darstellung */`) und lässt sich daher am Stück in Node prüfen.
 
 ## Neues Tool anlegen
 
