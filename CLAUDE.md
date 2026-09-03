@@ -292,6 +292,25 @@ Der Rechenkern ist frei von DOM-Zugriffen (`var HB_1WE_START` bis
 3. Kachel in `index.html` ergänzen
 4. Zeile in der Tabelle oben in dieser Datei ergänzen
 
+## Zwei Repositories: Test und Original
+
+Entwickelt wird im Testordner `LutzSpring-Test` (GitHub `Naloogo/Tool-Test`).
+Erst wenn der Betrieb eine Fassung im Alltag erprobt und abgenickt hat, geht
+sie ins Original `LutzSpring` (GitHub `Naloogo/Auslegung-WP`), das über
+GitHub Pages live ist.
+
+**Neue Arbeit gehört immer zuerst in den Testordner.** Nichts ungefragt ins
+Original schieben — dort arbeitet der Betrieb mit Kunden.
+
+Stand der Abnahme, bewusst nur im Test vorhanden:
+
+- `bad-angebot.html` — im Original fehlt die Datei absichtlich. Die Kachel
+  auf der Landingpage bleibt dort stehen und läuft ins Leere, bis die
+  Fassung abgenommen ist.
+- GAEB-Export und Artikelanbindung in `heizkoerper.html` — das Original
+  führt die Fassung ohne diese Funktionen, weil sie noch nicht
+  arbeitsfertig sind.
+
 ## Arbeitsweise
 
 Commits auf `main` gehen direkt live über GitHub Pages. Vor dem Push kurz
