@@ -358,9 +358,9 @@ Stand der Abnahme, bewusst nur im Test vorhanden:
 - `bad-angebot.html` — im Original fehlt die Datei absichtlich. Die Kachel
   auf der Landingpage bleibt dort stehen und läuft ins Leere, bis die
   Fassung abgenommen ist.
-- GAEB-Export und Artikelanbindung in `heizkoerper.html` — das Original
-  führt die Fassung ohne diese Funktionen, weil sie noch nicht
-  arbeitsfertig sind.
+`heizkoerper.html` ist seit 09/2026 im Original wieder auf dem vollen Stand
+(GAEB-Export, Artikelanbindung, Flächenfelder, Bestandskonsolen), nachdem der
+Lagerabgleich korrigiert war.
 
 ## Arbeitsweise
 
