@@ -132,6 +132,22 @@ jahrelang verdeckt. Wer die Trefferregeln aendert, muss die Begruendungen
 in `lagerNichtNutzbar` mitziehen — sonst erklaert das Tool etwas anderes,
 als es rechnet.
 
+**Die Anschlussseite gibt es nur beim Ventil.** Der Kompaktheizkoerper (K)
+ist beidseitig seitlich angeschlossen — eine Seitenangabe waere dort falsch.
+Deshalb fuehrt der gespeicherte Heizkoerper das Feld `anschluss` nur bei
+`v==='V'`, und der Lager-Tag in der Ergebnistabelle zeigt die Seite nur auf
+Ventilzeilen. Der Fehler „Kompakt (rechts)" war die zweite Richtung des
+K/V-Fehlers oben: eine Ventil-Lagerposition traf auf eine Kompaktzeile, und
+der Tag druckte deren Seite mit.
+
+**Die Seite muss gespeichert werden, nicht nur im Text stehen.** Bis 09/2026
+steckte sie ausschliesslich in `modell`, `klartext` und `bestellnr`. Damit
+lief `artikelFinden()` ins Leere: es liest `h.anschluss` und fiel ohne das
+Feld immer auf `re` zurueck. Im Artikelstamm liegen 1.080 Masse mit beiden
+Seiten, und **in allen 1.080 unterscheidet sich die Artikelnummer** — ein
+linksseitiges Ventil bekam also die Nummer der rechten Ausfuehrung in den
+GAEB-Export. Wer das hk-Objekt umbaut, muss `anschluss` mitfuehren.
+
 **Lagertreffer ist ein Vorschlag, keine Tatsache.** `lager.json` ist ein
 Stand, kein Nachweis; der Heizkoerper kann inzwischen anderswo verbaut
 sein. Im Auswahlpanel laesst sich der Haken „aus dem Lager entnehmen"

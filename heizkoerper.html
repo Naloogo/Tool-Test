@@ -1484,7 +1484,10 @@ function renderFit(list,i,bedarf,lagerNichtNutzbar){
     const isBest = r===best;
     const istBestand = i.bestand && r.typ===i.bestand;
     const bestandTag = istBestand ? '<span class="tag-bestand">= Bestand</span>' : '';
-    const lagerTag = r.lager ? `<span class="tag-lager" title="${r.lager.notiz?r.lager.notiz+' · ':''}${r.lager.anschluss?'Anschluss '+r.lager.anschluss+' · ':''}auf Lager">📦 Lager: ${r.lager.stueck} St.${r.lager.anschluss?' ('+r.lager.anschluss+')':''}</span>` : '';
+    // Anschlussseite nur bei der Ventilausfuehrung ausgeben. Der Kompakt ist
+    // beidseitig anschliessbar; eine Seitenangabe waere dort schlicht falsch.
+    const lagerSeite = (r.v==='V' && r.lager && r.lager.anschluss) ? r.lager.anschluss : '';
+    const lagerTag = r.lager ? `<span class="tag-lager" title="${r.lager.notiz?r.lager.notiz+' · ':''}${lagerSeite?'Anschluss '+lagerSeite+' · ':''}auf Lager">📦 Lager: ${r.lager.stueck} St.${lagerSeite?' ('+lagerSeite+')':''}</span>` : '';
     // Tiefenabweichung zum Guss-Bestand anzeigen
     let btZelle = `${r.tiefe}`;
     if(i.gusstiefe!=null){
@@ -1622,6 +1625,7 @@ function hkKorbAdd(){
     h.hersteller===a.hersteller && h.typ===a.r.typ &&
     h.bh===a.r.bh && h.bl===a.r.bl && (h.v||'')===(a.r.v||'') &&
     !!h.istBestand===istBestand && !!h.ausLager===ausLager &&
+    (h.anschluss||'')===(a.anschluss||'') &&
     (h.konsole?h.konsole.art:'')===(konsole?konsole.art:''));
   if(gleich){
     gleich.anzahl = (gleich.anzahl||1) + 1;
@@ -1634,6 +1638,7 @@ function hkKorbAdd(){
       bestellnr:a.bez.bestellnr||'– Sondermaß –',
       konsole,
       istBestand, ausLager,
+      anschluss: a.anschluss||'',
       lagerNotiz: ausLager ? (a.lager.notiz||'') : ''
     });
   }
@@ -1700,7 +1705,10 @@ function zeigeBezeichnung(idx){
   const w = (r.w!=null)? r.w : leistung(r.typ,r.bh,r.bl,i.tv,i.tr,i.tl);
   const cover = (r.cover!=null)? r.cover : (w!=null? w/i.heizlast : null);
   const b=db.bezeichnung(r.typ,r.bh,r.bl,r.v||'', i.anschluss);
-  AKTUELLE_AUSWAHL = {r:{...r, w, cover}, bez:b, hersteller:HERSTELLER, dbName:db.name, lager:r.lager||null, ausLager:!!r.lager, istBestand:false, konsolenArt:'wand', bestandKonsole:false};
+  AKTUELLE_AUSWAHL = {r:{...r, w, cover}, bez:b, hersteller:HERSTELLER, dbName:db.name, lager:r.lager||null, ausLager:!!r.lager, istBestand:false, konsolenArt:'wand', bestandKonsole:false,
+    // Nur die Ventilausfuehrung hat eine Anschlussseite. Der Kompakt ist
+    // beidseitig seitlich angeschlossen - dort bleibt das Feld leer.
+    anschluss: (r.v==='V') ? i.anschluss : ''};
   const panel=document.getElementById('bezPanel');
   if(!panel) return;
   const nrHtml = b.bestellnr
@@ -2470,7 +2478,7 @@ function speichereRaum(){
       leistung:h.w, leistungGesamt:h.w*(h.anzahl||1),
       modell:h.modell, klartext:h.klartext,
       bestellnr:h.bestellnr, konsole:h.konsole,
-      istBestand: !!h.istBestand, ausLager: !!h.ausLager, lagerNotiz: h.lagerNotiz||''
+      istBestand: !!h.istBestand, ausLager: !!h.ausLager, anschluss: h.anschluss||'', lagerNotiz: h.lagerNotiz||''
     }));
     const raum={
       name, ts:Date.now(), mehrfach:true,
@@ -2532,7 +2540,7 @@ function speichereRaum(){
       typLabel:typLabelStr, bh:a.r.bh, bl:a.r.bl, bt:a.r.tiefe,
       qn: (function(){ const q=DB().normW(a.r.typ,a.r.bh,a.r.bl);
                        return q!=null?Math.round(q):null; })(),
-      typ:a.r.typ, v:a.r.v||'', hersteller:a.hersteller,
+      typ:a.r.typ, v:a.r.v||'', anschluss:a.anschluss||'', hersteller:a.hersteller,
       leistung:Math.round(a.r.w), deckung:Math.round(a.r.cover*100),
       modell:a.bez.modell, klartext:a.bez.klartext,
       bestellnr:a.bez.bestellnr||'– über Preisliste (Sondermaß) –',
