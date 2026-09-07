@@ -104,6 +104,41 @@ warmen Beigeton (`--bg`), `heizkoerper/bestandsaufnahme` einen kühlen
 Blauton (`--bg-cool`). Historisch gewachsen. Um zu vereinheitlichen, in
 `theme.css` einfach `--bg-cool: var(--bg);` setzen.
 
+## Lagerabgleich (`lager.json` -> `heizkoerper.html`)
+
+`imLager()` entscheidet, ob eine Lagerposition als Treffer gilt. Verglichen
+werden **alle** unterscheidenden Merkmale — Hersteller, Typ, Bauhoehe,
+Baulaenge, Stueckzahl, Bauform (profil/plan), **Ausfuehrung K/V** und bei
+Ventil die Anschlussseite.
+
+**Die Ausfuehrung K/V ist Pflicht und wurde lange nicht geprueft.** Bis
+09/2026 verglich `imLager()` das Feld `v` nicht. Weil die Voreinstellung
+„K & V" beide Varianten durchlaeuft, wurde jeder Kompaktheizkoerper aus dem
+Lager auch als Ventilheizkoerper vorgeschlagen — im Betrieb aufgefallen an
+einem Typ 22, 500x700. Der Fehler ist behoben; die Regel darf nicht wieder
+aufgeweicht werden: **K und V sind verschiedene Artikel mit verschiedener
+Anschlusstechnik.**
+
+Fehlt `v` in einer Kermi-Position, gilt sie bewusst als **kein Treffer** —
+lieber keine Empfehlung als eine falsche. Damit solche Positionen gar nicht
+erst entstehen, verlangt `bestandsaufnahme.html` die Ausfuehrung beim
+Anlegen. Bei Herstellern ohne K/V-Unterscheidung (Arbonia, Zehnder) ist
+`v` leer und der Vergleich entfaellt.
+
+**Jede nicht nutzbare Lagerposition nennt ihren Grund** (Flaeche, Bauform,
+Ausfuehrung, Anschlussseite, fehlendes Mass in der Leistungstabelle,
+Heizlast). Das ist Absicht: Ein stilles „nicht passend" hat den Fehler oben
+jahrelang verdeckt. Wer die Trefferregeln aendert, muss die Begruendungen
+in `lagerNichtNutzbar` mitziehen — sonst erklaert das Tool etwas anderes,
+als es rechnet.
+
+**Lagertreffer ist ein Vorschlag, keine Tatsache.** `lager.json` ist ein
+Stand, kein Nachweis; der Heizkoerper kann inzwischen anderswo verbaut
+sein. Im Auswahlpanel laesst sich der Haken „aus dem Lager entnehmen"
+deshalb abwaehlen — die Position wandert dann im Bericht von „Aus dem Lager
+entnehmen" in „Zu bestellende Heizkoerper". Getragen wird das vom Feld
+`ausLager` am gespeicherten Raum.
+
 ## Schnittstelle zu Hero (Kalkulationssoftware)
 
 Kalkuliert und bepreist wird **nicht** in diesen Tools, sondern in Hero.

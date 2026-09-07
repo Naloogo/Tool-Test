@@ -102,7 +102,8 @@
   .kons-btn{flex:1;padding:5px 8px;background:var(--overlay-white-12);border:1px solid var(--overlay-white-30);border-radius:6px;color:var(--text-on-dark);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
   .kons-btn.active{background:var(--brand-yellow);color:var(--on-yellow);border-color:var(--brand-yellow)}
   .kons-inhalt{font-size:12.5px}
-  .bez-lager{margin-top:10px;background:var(--lager-overlay-bg);border:1px solid var(--lager-overlay-border);border-radius:7px;padding:7px 11px;font-size:12.5px;color:var(--text-on-dark)}
+  .bez-lager{margin-top:10px;display:flex;align-items:flex-start;gap:8px;background:var(--lager-overlay-bg);border:1px solid var(--lager-overlay-border);border-radius:7px;padding:8px 11px;font-size:12.5px;color:var(--text-on-dark);cursor:pointer}
+  .bez-lager input{margin-top:2px;flex-shrink:0}
   .bez-bestand-kons{margin-left:18px;margin-top:6px;font-size:12px;opacity:.92}
   .bez-bestand{margin-top:10px;display:flex;align-items:flex-start;gap:8px;background:var(--bestand-overlay-bg);border:1px solid var(--bestand-overlay-border);border-radius:7px;padding:8px 11px;font-size:12.5px;color:var(--text-on-dark);cursor:pointer}
   .bez-bestand input{margin-top:2px;flex-shrink:0}
@@ -953,6 +954,15 @@ function imLager(hersteller, typ, bh, bl, v, anschluss){
       const lagerBauform = p.bauform || 'profil';
       if(lagerBauform !== KERMI_BAUFORM) return false;
     }
+    // Ausfuehrung K/V muss uebereinstimmen. Ein Kompaktheizkoerper (K, seitlich
+    // angeschlossen) darf nicht als Ventilheizkoerper (V) vorgeschlagen werden
+    // und umgekehrt - andere Anschlusstechnik, anderer Artikel.
+    // Fehlt die Angabe in der Lagerposition, ist sie nicht zuordenbar und
+    // gilt bewusst NICHT als Treffer (lieber keine Empfehlung als eine falsche).
+    if(v){
+      if(!p.v) return false;
+      if(String(p.v).toUpperCase()!==String(v).toUpperCase()) return false;
+    }
     // Ventil-Anschlussseite
     if(v==='V' && p.anschluss){
       const gesucht = anschluss==='links' ? 'links' : 'rechts';
@@ -1389,11 +1399,25 @@ function runFit(){
     !out.some(r => r.lager && r.lager===p && r.lagerBevorzugt)
   ).map(p=>{
     const passtFlaeche = Number(p.bh)<=i.maxH+FLAECHEN_TOLERANZ && Number(p.bl)<=i.maxL+FLAECHEN_TOLERANZ;
+    // Passt die Ausfuehrung der Lagerposition zu einer der gesuchten Varianten?
+    // Gleiche Regel wie in imLager(), damit Grund und Treffer nicht auseinanderlaufen.
+    const ausfPasst = ausfVarianten.some(v => !v || (p.v && String(p.v).toUpperCase()===v));
     let grund;
     if(!passtFlaeche) grund = `passt nicht in die Fläche (max. ${flaecheTxt(i)})`;
+    else if(HERSTELLER==='kermi' && (p.bauform||'profil')!==KERMI_BAUFORM)
+      grund = `andere Bauform (Lager ${p.bauform||'profil'}, ausgelegt ${KERMI_BAUFORM})`;
+    else if(!ausfPasst)
+      grund = p.v
+        ? `andere Ausführung (Lager ${p.v}, ausgelegt ${ausfVarianten.filter(Boolean).join('/')})`
+        : 'Ausführung K/V fehlt in der Lagerdatei';
+    else if(p.v==='V' && p.anschluss && ausfVarianten.includes('V')
+            && String(p.anschluss)!==(i.anschluss==='links'?'links':'rechts'))
+      grund = `andere Anschlussseite (Lager ${p.anschluss}, gebraucht ${i.anschluss})`;
     else {
       const w = leistung(p.typ, Number(p.bh), Number(p.bl), i.tv, i.tr, i.tl);
-      grund = (w!=null && w<bedarf) ? `deckt die Heizlast nicht (${Math.round(w)} W < ${Math.round(bedarf)} W)` : 'nicht passend';
+      if(w==null)          grund = `Maß ${p.bh}×${p.bl} mm steht nicht in der Leistungstabelle des Tools`;
+      else if(w<bedarf)    grund = `deckt die Heizlast nicht (${Math.round(w)} W < ${Math.round(bedarf)} W)`;
+      else                 grund = 'nicht passend';
     }
     return {pos:p, grund};
   });
@@ -1583,7 +1607,7 @@ function hkKorbAdd(){
   const i=getInputs();
   const w = a.r.w!=null ? a.r.w : leistung(a.r.typ,a.r.bh,a.r.bl,i.tv,i.tr,i.tl);
   const istBestand = !!a.istBestand;
-  const ausLager = !!a.lager;
+  const ausLager = !!(a.lager && a.ausLager);
   // Konsole: Kermi therm-x2 (Wand oder Stand) ODER Verteo — aber NICHT bei Bestand (bleibt hängen)
   let konsole=null;
   if(!istBestand || a.bestandKonsole){
@@ -1676,7 +1700,7 @@ function zeigeBezeichnung(idx){
   const w = (r.w!=null)? r.w : leistung(r.typ,r.bh,r.bl,i.tv,i.tr,i.tl);
   const cover = (r.cover!=null)? r.cover : (w!=null? w/i.heizlast : null);
   const b=db.bezeichnung(r.typ,r.bh,r.bl,r.v||'', i.anschluss);
-  AKTUELLE_AUSWAHL = {r:{...r, w, cover}, bez:b, hersteller:HERSTELLER, dbName:db.name, lager:r.lager||null, istBestand:false, konsolenArt:'wand', bestandKonsole:false};
+  AKTUELLE_AUSWAHL = {r:{...r, w, cover}, bez:b, hersteller:HERSTELLER, dbName:db.name, lager:r.lager||null, ausLager:!!r.lager, istBestand:false, konsolenArt:'wand', bestandKonsole:false};
   const panel=document.getElementById('bezPanel');
   if(!panel) return;
   const nrHtml = b.bestellnr
@@ -1694,8 +1718,11 @@ function zeigeBezeichnung(idx){
       konsoleHtml = `<div class="bez-konsole">🔩 Verteo-Konsolen für BH ${r.bh} mm – Art.-Nr. im Kermi-Katalog prüfen</div>`;
     }
   }
+  // Lagertreffer ist ein Vorschlag, keine Tatsache: der Bestand kann veraltet
+  // sein (HK anderswo verbaut). Deshalb abwaehlbar -> wandert dann in die
+  // Bestellliste statt in "aus dem Lager entnehmen".
   const lagerHinweisPanel = AKTUELLE_AUSWAHL.lager
-    ? `<div class="bez-lager">📦 Dieser Heizkörper liegt im <b>Lager</b>${AKTUELLE_AUSWAHL.lager.notiz?' ('+AKTUELLE_AUSWAHL.lager.notiz+')':''} – wird als Lagerware gekennzeichnet.</div>`
+    ? `<label class="bez-lager"><input type="checkbox" id="ausLagerCheck" ${AKTUELLE_AUSWAHL.ausLager?'checked':''} onchange="toggleAusLager(this.checked)"> <span>📦 Liegt im <b>Lager</b>${AKTUELLE_AUSWAHL.lager.notiz?' ('+AKTUELLE_AUSWAHL.lager.notiz+')':''} – <b id="ausLagerText">aus dem Lager entnehmen</b>. Haken weg, wenn er trotzdem bestellt werden soll.</span></label>`
     : '';
   const bestandToggle = `<label class="bez-bestand"><input type="checkbox" id="bestandCheck" ${AKTUELLE_AUSWAHL.istBestand?'checked':''} onchange="toggleBestand(this.checked)"> <span>Bestandsheizkörper – bleibt hängen, wird <b>nicht getauscht</b></span></label>
     <label class="bez-bestand bez-bestand-kons" id="bestandKonsWrap" style="display:${AKTUELLE_AUSWAHL.istBestand?'flex':'none'}"><input type="checkbox" id="bestandKonsCheck" ${AKTUELLE_AUSWAHL.bestandKonsole?'checked':''} onchange="toggleBestandKonsole(this.checked)"> <span>Halter trotzdem nötig – Konsolen oben mit einplanen</span></label>`;
@@ -1737,6 +1764,16 @@ function toggleBestandKonsole(checked){
   if(!AKTUELLE_AUSWAHL) return;
   AKTUELLE_AUSWAHL.bestandKonsole = !!checked;
   konsolenPanelSichtbarkeit();
+}
+
+// Lagerware oder doch bestellen? Der Lagerbestand aus lager.json ist nur ein
+// Stand, kein Nachweis - ist der HK inzwischen anderswo verbaut, wird hier
+// abgewaehlt und der HK erscheint im Bericht unter "zu bestellen".
+function toggleAusLager(checked){
+  if(!AKTUELLE_AUSWAHL) return;
+  AKTUELLE_AUSWAHL.ausLager = !!checked;
+  const t=document.getElementById('ausLagerText');
+  if(t) t.textContent = checked ? 'aus dem Lager entnehmen' : 'wird trotzdem bestellt';
 }
 
 // Konsolenauswahl ausgrauen, wenn sie fuer diesen HK nicht gebraucht wird
@@ -2466,7 +2503,7 @@ function speichereRaum(){
   if(!AKTUELLE_AUSWAHL){ alert('Bitte zuerst einen Heizkörper in der Ergebnistabelle anklicken (in Tab ①, ② oder ③).'); return; }
   const a=AKTUELLE_AUSWAHL;
   const istBestandS = !!a.istBestand;
-  const ausLagerS = !!a.lager;
+  const ausLagerS = !!(a.lager && a.ausLager);
   const herstellerVorher=HERSTELLER;
   HERSTELLER=a.hersteller;
   const rv=requiredVL(a.r.typ,a.r.bh,a.r.bl,bedarf,spreizung,i.tl);

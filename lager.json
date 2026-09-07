@@ -1,5 +1,5 @@
 {
-  "_hinweis": "Lagerbestand Lutz Spring GmbH. Neben heizkoerper.html im selben Ordner ablegen. Felder: hersteller (kermi|verteo|arbonia|zehnder), typ, bh, bl, stueck. Optional: v ('K'/'V' bei Kermi), bauform ('profil'/'plan' bei Kermi therm-x2), anschluss ('rechts'/'links' bei Ventilausführung V), notiz.",
+  "_hinweis": "Lagerbestand Lutz Spring GmbH. Neben heizkoerper.html im selben Ordner ablegen. Felder: hersteller (kermi|verteo|arbonia|zehnder), typ, bh, bl, stueck. Pflicht bei Kermi/Verteo: v ('K' Kompakt / 'V' Ventil) - ohne diese Angabe findet heizkoerper.html die Position nicht. Optional: bauform ('profil'/'plan' bei Kermi therm-x2), anschluss ('rechts'/'links' bei Ventilausführung V), notiz.",
   "stand": "2026-08-12",
   "bestand": [
     {

@@ -240,8 +240,12 @@ function leseFormular(){
   const stueck=parseInt(document.getElementById('stueck').value,10);
   if(!bh||!bl){ toast('Bitte Bauhöhe und Baulänge angeben.'); return null; }
   if(!stueck||stueck<1){ toast('Bitte eine Stückzahl ≥ 1 angeben.'); return null; }
-  const pos={ hersteller:m.id, typ:document.getElementById('typ').value, bh, bl, stueck };
   const ausf=document.getElementById('ausf').value;
+  // Ohne Ausfuehrung ist die Position fuer heizkoerper.html nicht zuordenbar:
+  // der Lagerabgleich dort vergleicht K/V und wertet eine fehlende Angabe
+  // bewusst als "kein Treffer". Deshalb hier schon verlangen.
+  if(m.ausf && !ausf){ toast('Bitte die Ausführung angeben (K oder V).'); return null; }
+  const pos={ hersteller:m.id, typ:document.getElementById('typ').value, bh, bl, stueck };
   if(m.ausf && ausf) pos.v=ausf;
   // Bauform nur bei Kermi therm-x2
   if(m.ausf) pos.bauform=document.getElementById('bauform').value;
@@ -358,7 +362,7 @@ document.getElementById('downloadBtn').addEventListener('click',()=>{
   if(!BESTAND.length){ toast('Liste ist leer – nichts zum Speichern.'); return; }
   const stand=document.getElementById('stand').value || new Date().toISOString().slice(0,10);
   const daten={
-    _hinweis:"Lagerbestand Lutz Spring GmbH. Neben heizkoerper.html im selben Ordner ablegen. Felder: hersteller (kermi|verteo|arbonia|zehnder), typ, bh, bl, stueck. Optional: v ('K'/'V' bei Kermi), bauform ('profil'/'plan' bei Kermi therm-x2), anschluss ('rechts'/'links' bei Ventilausführung V), notiz.",
+    _hinweis:"Lagerbestand Lutz Spring GmbH. Neben heizkoerper.html im selben Ordner ablegen. Felder: hersteller (kermi|verteo|arbonia|zehnder), typ, bh, bl, stueck. Pflicht bei Kermi/Verteo: v ('K' Kompakt / 'V' Ventil) - ohne diese Angabe findet heizkoerper.html die Position nicht. Optional: bauform ('profil'/'plan' bei Kermi therm-x2), anschluss ('rechts'/'links' bei Ventilausführung V), notiz.",
     stand,
     bestand: BESTAND
   };
